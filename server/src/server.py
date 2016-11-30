@@ -13,6 +13,8 @@ MAIN_PAGE_HTML = """\
     <a href="getvalue">QueryValue </a>
     </br>
     <a href="getmidpoint">GetMidpoint </a>
+    </br>
+    <a href="registeruser">RegisterUser </a>
   </body>
 </html>
 """
@@ -168,6 +170,40 @@ class GetRecommendation(webapp2.RequestHandler):
     </html>\n''') 
 
 
+class RegisterUser(webapp2.RequestHandler):
+
+  def register_user(self, phoneNumber, email, firstName, lastName):
+  	
+    #entry = db.GqlQuery("SELECT * FROM StoredData where tag = :1", tag).get()
+    #if entry:
+    #    returnVal(self, lambda : json.dump(["Update"], self.response.out)) 
+    #else: 
+    #    entry = StoredData(tag = tag, value = value)
+    #    returnVal(self, lambda : json.dump(["Store"], self.response.out)) 
+    #entry.put()
+
+  def post(self):
+    phoneNumber = self.request.get('phone')
+    email = self.request.get('email')
+    firstName = self.request.get('first')
+    lastName = self.request.get('last')
+    self.register_user(phoneNumber, email, firstName, lastName)
+
+# this is just for browser test
+  def get(self):
+    self.response.out.write('''
+    <html><body>
+    <form action="/registeruser" method="post"
+          enctype=application/x-www-form-urlencoded>
+       <p>Phone Number<input type="text" name="phone" /></p>
+       <p>Email<input type="text" name="email" /></p>
+       <p>First Name<input type="text" name="first" /></p>
+       <p>Last Name<input type="text" name="last" /></p>
+       <input type="hidden" name="fmt" value="html">
+       <input type="submit" value="Register a User">
+    </form></body></html>\n''')
+
+
 #### Utilty procedures for generating the output
 #### Handler is an appengine request handler.  writer is a thunk
 #### (i.e. a procedure of no arguments) that does the write when invoked.
@@ -189,5 +225,6 @@ application = webapp2.WSGIApplication([
     ('/storeavalue', StoreAValue),
     ('/getvalue', GetValue),
     ('/getmidpoint', GetMidpoint),
+    ('/registeruser', RegisterUser),
     ], debug=True)
 
