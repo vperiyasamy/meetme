@@ -92,7 +92,7 @@ class GetValue(webapp2.RequestHandler):
     </form></body></html>\n''')
    
 
-class GetMidpoint(webapp2.RequestHandler):
+class GetRecommendation(webapp2.RequestHandler):
 
   def get_midpoint(pairs):
     cartesian = []
@@ -142,7 +142,7 @@ class GetMidpoint(webapp2.RequestHandler):
     # not bound to a name) at runtime, using a construct called "lambda". 
     # http://www.secnetix.de/olli/Python/lambda_functions.hawk
     # json for python:  http://docs.python.org/2/library/json.html
-    returnVal(self, lambda : json.dump(["VALUE", tag, value], self.response.out))
+    returnVal(self, lambda : json.dump(["MIDPOINT", lat, lon], self.response.out))
     
     ## The above call to returnVal is equivalent to:
     #self.response.headers['Content-Type'] = 'application/jsonrequest'
@@ -156,13 +156,16 @@ class GetMidpoint(webapp2.RequestHandler):
 
   def get(self):
     self.response.out.write('''
-    <html><body>
-    <form action="/getvalue" method="post"
+    <html>
+    <body>
+    <form action="/getmidpoint" method="post"
           enctype=application/x-www-form-urlencoded>
        <p>Tag<input type="text" name="tag" /></p>
        <input type="hidden" name="fmt" value="html">
        <input type="submit" value="Get value">
-    </form></body></html>\n''') 
+    </form>
+    </body>
+    </html>\n''') 
 
 
 #### Utilty procedures for generating the output
