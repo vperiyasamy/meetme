@@ -5,6 +5,12 @@ import webapp2
 import json # without this, you will have error 500
 import math
 
+import logging
+import os
+import cloudstorage as gcs
+
+from google.appengine.api import app_identity
+
 MAIN_PAGE_HTML = """\
 <html>
   <body>
@@ -12,7 +18,7 @@ MAIN_PAGE_HTML = """\
     </br>
     <a href="getvalue">QueryValue </a>
     </br>
-    <a href="getmidpoint">GetMidpoint </a>
+    <a href="getrecommendation">GetMidpoint </a>
     </br>
     <a href="registeruser">RegisterUser </a>
   </body>
@@ -98,10 +104,10 @@ class GetRecommendation(webapp2.RequestHandler):
 
   def get_midpoint(pairs):
     cartesian = []
-	w = 0
+    w = 0
 
 	# convert latitude and longitude to cartesian coordinates
-	for lat, lon in pairs:
+    for lat, lon in pairs:
 		# convert to radians
         lat = lat * (math.pi) / 180 
         lon = lon * (math.pi) / 180
@@ -118,27 +124,27 @@ class GetRecommendation(webapp2.RequestHandler):
         w += 1  # w represents the weight of each location, we will take it to be 1 equally for all
 
     # these will be the final cartesian coordinates of the midpoint
-	x = 0
-	y = 0
-	z = 0
+    x = 0
+    y = 0
+    z = 0
 
 	#next, compute weighted average of each coordinate
-	for xyz in cartesian:
+    for xyz in cartesian:
         x += xyz[0]
         y += xyz[1]
         z += xyz[2]
 
-	x /= w
-	y /= w
-	z /= w
+    x /= w
+    y /= w
+    z /= w
 
 	#lastly, convert back to latitude and longitude
-	lon = math.atan2(y, x)
-	hyp = math.sqrt( (x * x) + (y * y) )
-	lat = math.atan2(z, hyp)
+    lon = math.atan2(y, x)
+    hyp = math.sqrt( (x * x) + (y * y) )
+    lat = math.atan2(z, hyp)
 
-	lat = lat * 180 / math.pi
-	lon = lon * 180 / math.pi
+    lat = lat * 180 / math.pi
+    lon = lon * 180 / math.pi
 
     # Python supports the creation of anonymous functions (i.e. functions that are 
     # not bound to a name) at runtime, using a construct called "lambda". 
@@ -160,7 +166,7 @@ class GetRecommendation(webapp2.RequestHandler):
     self.response.out.write('''
     <html>
     <body>
-    <form action="/getmidpoint" method="post"
+    <form action="/getrecommendation" method="post"
           enctype=application/x-www-form-urlencoded>
        <p>Tag<input type="text" name="tag" /></p>
        <input type="hidden" name="fmt" value="html">
@@ -173,7 +179,36 @@ class GetRecommendation(webapp2.RequestHandler):
 class RegisterUser(webapp2.RequestHandler):
 
   def register_user(self, phoneNumber, email, firstName, lastName):
-  	
+  	bucket_name = os.environ.get('BUCKET_NAME',
+                               app_identity.get_default_gcs_bucket_name())
+
+    self.response.headers['Content-Type'] = 'text/plain'
+    self.response.write('Demo GCS Application running from Version: '
+                      + os.environ['CURRENT_VERSION_ID'] + '\n')
+    self.response.write('Using bucket name: ' + bucket_name + '\n\n')
+    
+    bucket = '/' + bucket_name
+    filename = bucket + phoneNumber
+    #Create a file.
+
+  	#The retry_params specified in the open call will override the default
+  	#retry params for this particular file handle.
+
+    self.response.write('Creating file %s\n' % filename)
+
+    write_retry_params = gcs.RetryParams(backoff_factor=1.1)
+    gcs_file = gcs.open(filename,
+	                    'w',
+                        content_type='text/plain',
+                        retry_params=write_retry_params)
+    gcs_file.write(phoneNumber + '\n')
+    gcs_file.write(email + '\n')
+    gcs_file.write(firstName + '\n')
+    gcs_file.write(lastName + '\n')
+    gcs_file.close()
+
+    returnVal(self, lambda : json.dump(["Success"], self.response.out))
+
     #entry = db.GqlQuery("SELECT * FROM StoredData where tag = :1", tag).get()
     #if entry:
     #    returnVal(self, lambda : json.dump(["Update"], self.response.out)) 
@@ -224,7 +259,7 @@ application = webapp2.WSGIApplication([
     ('/', MainPage),
     ('/storeavalue', StoreAValue),
     ('/getvalue', GetValue),
-    ('/getmidpoint', GetMidpoint),
+    ('/getrecommendation', GetRecommendation),
     ('/registeruser', RegisterUser),
     ], debug=True)
 

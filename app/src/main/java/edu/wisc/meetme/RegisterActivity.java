@@ -38,7 +38,7 @@ import android.view.inputmethod.EditorInfo;
 /**
  * Created by Yaphet on 11/12/16.
  *
- * updated by Vish 11/30/16
+ * populated by Vish 11/30/16
  */
 
 public class RegisterActivity extends Activity {
@@ -49,29 +49,25 @@ public class RegisterActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_register);
 
-        Button storeButton = (Button)findViewById(R.id.button1);
-        storeButton.setOnClickListener(new View.OnClickListener() {
+        Button registerButton = (Button)findViewById(R.id.register);
+        registerButton.setOnClickListener(new View.OnClickListener() {
                                            public void onClick(View v) {
                                                //Store
-                                               String[ ] aStr = new String[2] ;
-                                               aStr[0] = ((EditText)findViewById(R.id.fieldInKey)).getText().toString();
-                                               aStr[1] = ((EditText)findViewById(R.id.fieldInVal)).getText().toString();
+                                               String[ ] aStr = new String[4] ;
+                                               aStr[0] = ((EditText)findViewById(R.id.phoneno)).getText().toString();
+                                               aStr[1] = ((EditText)findViewById(R.id.email)).getText().toString();
+                                               aStr[2] = ((EditText)findViewById(R.id.firstname)).getText().toString();
+                                               aStr[3] = ((EditText)findViewById(R.id.lastname)).getText().toString();
 
-                                               //Query
-                                               String[ ] rStr = new String[1] ;
-                                               rStr[0] = ((EditText)findViewById(R.id.inQKey)).getText().toString();
-
-                                               if (!aStr[0].isEmpty() && !aStr[1].isEmpty())
+                                               if (!aStr[0].isEmpty() && !aStr[1].isEmpty() && !aStr[2].isEmpty() && !aStr[3].isEmpty())
                                                {
                                                    //Execute register request
-                                                   httpRegister hT = new httpRegister();
-                                                   hS.execute(aStr);
+                                                   httpRegister hR = new httpRegister();
+                                                   hR.execute(aStr);
                                                }
-                                               else if (!rStr[0].isEmpty())
+                                               else
                                                {
-                                                   //Execute query
-                                                   httpQuery hQ = new httpQuery();
-                                                   hQ.execute(rStr);
+                                                   // DISPLAY ERROR MESSAGE TO USER THAT FIELDS ARE INCOMPLETE
                                                }
                                            }
                                        }
@@ -87,7 +83,7 @@ public class RegisterActivity extends Activity {
 
             //Construct an HTTP POST
             HttpClient httpclient = new DefaultHttpClient();
-            HttpPost storeVal = new HttpPost("http://meetmeece454.appspot.com/registeruser");
+            HttpPost registerUser = new HttpPost("http://meetmeece454.appspot.com/registeruser");
 
             // Values to be sent from android app to server
             ArrayList<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>();
@@ -95,20 +91,21 @@ public class RegisterActivity extends Activity {
             // "tag" is the name of the text form on the webserver
             // "value" is the value that the client is submitting to the server
             // These two are specified by the server. The cilent side program must respect.
-            nameValuePairs.add(new BasicNameValuePair("tag", strs[0]));
-            nameValuePairs.add(new BasicNameValuePair("value", strs[1]));
-
+            nameValuePairs.add(new BasicNameValuePair("phone", strs[0]));
+            nameValuePairs.add(new BasicNameValuePair("email", strs[1]));
+            nameValuePairs.add(new BasicNameValuePair("first", strs[2]));
+            nameValuePairs.add(new BasicNameValuePair("last", strs[3]));
 
             try {
                 UrlEncodedFormEntity httpEntity = new UrlEncodedFormEntity(nameValuePairs);
                 storeVal.setEntity(httpEntity);
 
                 //Execute HTTP POST
-                HttpResponse response = httpclient.execute(storeVal);
+                HttpResponse response = httpclient.execute(registerUser);
                 //Capture acknowledgement from server
                 // In this demo app, the server returns "Update" if the tag already exists;
                 // Otherwise, the server returns "New"
-                temp1 = EntityUtils.toString(response.getEntity());
+                temp = EntityUtils.toString(response.getEntity());
             }
             catch (ClientProtocolException e) {
                 e.printStackTrace();
@@ -120,7 +117,7 @@ public class RegisterActivity extends Activity {
 
             // Decompose the server's acknowledgement into a JSON array
             try {
-                JSONArray jsonArray = new JSONArray(temp1);
+                JSONArray jsonArray = new JSONArray(temp);
                 reply = jsonArray.getString(0);
 
             } catch (JSONException e) {
@@ -135,87 +132,19 @@ public class RegisterActivity extends Activity {
         @Override
         protected void onPostExecute(String res) {
 
-            if (res.equalsIgnoreCase("Store")) {
+            if (res.equalsIgnoreCase("Success")) {
                 Toast.makeText(getApplicationContext(),
-                        "Store new value!", Toast.LENGTH_SHORT).show();
+                        "Registered Successfully!", Toast.LENGTH_SHORT).show();
             }
-            else if(res.equalsIgnoreCase("Update")) {
+            else {
                 Toast.makeText(getApplicationContext(),
-                        "Update existing value!", Toast.LENGTH_SHORT).show();
+                        "Registration unsuccessful. Please try again later", Toast.LENGTH_SHORT).show();
             }
             // Clean the text field
-            ((EditText)findViewById(R.id.fieldInKey)).setText("");
-            ((EditText)findViewById(R.id.fieldInVal)).setText("");
-        }
-    }
-
-    protected class httpQuery extends AsyncTask<String, Void, String> {
-
-        @Override
-        protected String doInBackground(String... strs) {
-            final String reply;
-            String ret = null;
-            String temp1=""; //capture acknowledgement from server, if any
-
-            //Construct an HTTP POST
-            HttpClient httpclient = new DefaultHttpClient();
-            HttpPost queryVal = new HttpPost("http://vishminilabseven.appspot.com/getvalue");
-
-            ArrayList<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>();
-
-            // "tag" is the name of the text form on the webserver
-            // "value" is the value that the client is submitting to the server
-            // These two are specified by the server. The client side program must respect.
-            nameValuePairs.add(new BasicNameValuePair("tag", strs[0]));
-
-            // "tag" is the name of the text form on the webserver
-            // The client side program must respect.
-
-            try {
-                UrlEncodedFormEntity httpEntity = new UrlEncodedFormEntity(nameValuePairs);
-                queryVal.setEntity(httpEntity);
-
-                //Execute HTTP POST
-                HttpResponse response = httpclient.execute(queryVal);
-                //Capture acknowledgement from server
-                // In this demo app, the server returns "Update" if the tag already exists;
-                // Otherwise, the server returns "New"
-                temp1 = EntityUtils.toString(response.getEntity());
-            }
-            catch (ClientProtocolException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
-                System.out.println("HTTP IO Exception.");
-                e.printStackTrace();
-            }
-
-
-            // Decompose the server's acknowledgement into a JSON array
-            try {
-                JSONArray jsonArray = new JSONArray(temp1);
-                reply = jsonArray.getString(2);
-                ret = reply;
-
-                MainActivity.this.runOnUiThread(new Runnable() {
-                    public void run() {
-                        String val = "Value: " + reply;
-                        ((TextView)findViewById(R.id.outVal)).setText(val);
-                    }
-                });
-
-            } catch (JSONException e) {
-                System.out.println("Error in JSON decoding");
-                e.printStackTrace();
-            }
-
-            return ret;
-        }
-        @Override
-        protected void onPostExecute(String res) {
-            if (res.equalsIgnoreCase("VALUE")) {
-                Toast.makeText(getApplicationContext(),
-                        "Query!", Toast.LENGTH_SHORT).show();
-            }
+            ((EditText)findViewById(R.id.phoneno)).setText("");
+            ((EditText)findViewById(R.id.email)).setText("");
+            ((EditText)findViewById(R.id.firstname)).setText("");
+            ((EditText)findViewById(R.id.lastname)).setText("");
         }
     }
 
