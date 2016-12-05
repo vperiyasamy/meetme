@@ -25,45 +25,53 @@ MAIN_PAGE_HTML = """\
 </html>
 """
 
-class StoredData(db.Model):
-	tag = db.StringProperty()
-	value = db.StringProperty(multiline=True)
+class ActiveUsers(db.Model):
+	user = db.StringProperty()
+	active = db.BooleanProperty()
+
+
+#class StoredData(db.Model):
+#	tag = db.StringProperty()
+#	value = db.StringProperty(multiline=True)
 	## defining value as a string property limits individual values to 500
 	## characters.   To remove this limit, define value to be a text
 	## property instead, by commnenting out the previous line
 	## and replacing it by this one:
 	## value db.TextProperty()
 	# this line may not be necessary
-	date = db.DateTimeProperty(required=True, auto_now=True)
+#	date = db.DateTimeProperty(required=True, auto_now=True)
 
 
 
-class StoreAValue(webapp2.RequestHandler):
+class SetActive(webapp2.RequestHandler):
 
-	def store_a_value(self, tag, value):
-		entry = db.GqlQuery("SELECT * FROM StoredData where tag = :1", tag).get()
+	def set_active(self, user, active):
+		entry = db.GqlQuery("SELECT * FROM ActiveUsers WHERE user = :1", user).get()
 		if entry:
-			returnVal(self, lambda : json.dump(["Update"], self.response.out)) 
+			returnVal(self, lambda : json.dump(["Updated"], self.response.out)) 
 		else: 
-			entry = StoredData(tag = tag, value = value)
-			returnVal(self, lambda : json.dump(["Store"], self.response.out)) 
+			entry = ActiveUsers(user = user, active = active)
+			returnVal(self, lambda : json.dump(["Stored"], self.response.out)) 
 		entry.put()
 
 	def post(self):
-		tag = self.request.get('tag')
-		value = self.request.get('value')
-		self.store_a_value(tag, value)
+		user = self.request.get('user')
+		if self.request.get('value') == 'active':
+			active = True
+		else:
+			active = False
+		self.set_active(user, active)
 
 # this is just for browser test
 	def get(self):
 		self.response.out.write('''
 		<html><body>
-		<form action="/storeavalue" method="post"
+		<form action="/setactive" method="post"
 	          enctype=application/x-www-form-urlencoded>
-	       <p>Tag<input type="text" name="tag" /></p>
-	       <p>Value<input type="text" name="value" /></p>
+	       <p>User<input type="text" name="user" /></p>
+	       <p>Active<input type="text" name="active" /></p>
 	       <input type="hidden" name="fmt" value="html">
-	       <input type="submit" value="Store a value">
+	       <input type="submit" value="Set User Active">
 	    </form></body></html>\n''')
 
 class GetValue(webapp2.RequestHandler):
