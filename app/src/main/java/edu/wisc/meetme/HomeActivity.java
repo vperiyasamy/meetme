@@ -16,18 +16,19 @@ import android.support.v4.app.ActivityCompat;
 import android.util.Log;
 import android.view.View;
 
-<<<<<<< HEAD
+//<<<<<<< HEAD
+//=======
+import com.google.android.gms.appindexing.Action;
+import com.google.android.gms.appindexing.AppIndex;
+import com.google.android.gms.appindexing.Thing;
+import com.google.android.gms.common.api.GoogleApiClient;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.StringTokenizer;
 
-public class HomeActivity extends Activity {
-=======
-import com.google.android.gms.appindexing.Action;
-import com.google.android.gms.appindexing.AppIndex;
-import com.google.android.gms.appindexing.Thing;
-import com.google.android.gms.common.api.GoogleApiClient;
+//public class HomeActivity extends Activity {
+
 
 public class HomeActivity extends Activity implements LocationListener {
 
@@ -51,7 +52,7 @@ public class HomeActivity extends Activity implements LocationListener {
         startActivity(i);
 
     }
->>>>>>> refs/remotes/vperiyasamy/master
+//>>>>>>> refs/remotes/vperiyasamy/master
 
     ArrayList<User> testFriends;
     ArrayList<User> online = new ArrayList<User>();
@@ -63,7 +64,7 @@ public class HomeActivity extends Activity implements LocationListener {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
 
-<<<<<<< HEAD
+//<<<<<<< HEAD
         //When the user gets online, should send a ping to the server telling it the user is online
     }
 
@@ -91,7 +92,7 @@ public class HomeActivity extends Activity implements LocationListener {
 
         online = gpsSort(online);
         offline = alphaSort(offline);
-=======
+//=======
 //        locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
 //        // Get the default location service provider
 //        provider = locationManager.getBestProvider(new Criteria(), false);
@@ -225,7 +226,7 @@ public class HomeActivity extends Activity implements LocationListener {
 //        // See https://g.co/AppIndexing/AndroidStudio for more information.
 //        AppIndex.AppIndexApi.end(client, getIndexApiAction());
 //        client.disconnect();
->>>>>>> refs/remotes/vperiyasamy/master
+//>>>>>>> refs/remotes/vperiyasamy/master
     }
 
     //Sorts the given list based on distance from app-user
