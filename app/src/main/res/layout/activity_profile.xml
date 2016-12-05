@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -8,5 +9,120 @@
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context="edu.wisc.meetme.ProfileActivity">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/interests"
+        android:textSize="20sp"
+        android:layout_alignBaseline="@+id/textView5"
+        android:layout_alignBottom="@+id/textView5"
+        android:layout_alignLeft="@+id/phoneNumber"
+        android:layout_alignStart="@+id/phoneNumber"
+        android:layout_alignRight="@+id/phoneNumber"
+        android:layout_alignEnd="@+id/phoneNumber" />
+
+    <Button
+        android:text=">"
+        android:id="@+id/interestsButton"
+        android:textSize="14sp"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_alignBaseline="@+id/interests"
+        android:layout_alignBottom="@+id/interests"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true"
+        android:onClick="changeInterest" />
+
+    <Button
+        android:text=">"
+        android:id="@+id/phoneButton"
+        android:textSize="14sp"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_alignBaseline="@+id/phoneNumber"
+        android:layout_alignBottom="@+id/phoneNumber"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true"
+        android:onClick="changePhone" />
+
+    <Button
+        android:text=">"
+        android:id="@+id/idButton"
+        android:textSize="14sp"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:onClick="changeID"
+        android:layout_alignBaseline="@+id/userID"
+        android:layout_alignBottom="@+id/userID"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true" />
+
+    <TextView
+        android:text="UserID"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/textView"
+        android:textSize="20sp"
+        android:layout_marginBottom="20dp"
+        android:layout_above="@+id/phoneButton"
+        android:layout_toLeftOf="@+id/imageView"
+        android:layout_toStartOf="@+id/imageView" />
+
+    <TextView
+        android:text="Interests"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/textView5"
+        android:textSize="20sp"
+        android:layout_marginBottom="77dp"
+        android:layout_alignParentBottom="true"
+        android:layout_alignLeft="@+id/textView"
+        android:layout_alignStart="@+id/textView" />
+
+    <ImageView
+        android:layout_width="200dp"
+        android:layout_height="200dp"
+        app:srcCompat="@drawable/camera"
+        android:layout_marginTop="25dp"
+        android:id="@+id/imageView2"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/userID"
+        android:textSize="20sp"
+        android:layout_marginLeft="13dp"
+        android:layout_marginStart="13dp"
+        android:layout_alignBaseline="@+id/textView"
+        android:layout_alignBottom="@+id/textView"
+        android:layout_toRightOf="@+id/textView5"
+        android:layout_alignRight="@+id/imageView2"
+        android:layout_alignEnd="@+id/imageView2" />
+
+    <TextView
+        android:text="Phone"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/textView3"
+        android:textSize="20sp"
+        android:layout_marginBottom="17dp"
+        android:layout_above="@+id/interestsButton"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/phoneNumber"
+        android:textSize="20sp"
+        android:layout_alignBaseline="@+id/textView3"
+        android:layout_alignBottom="@+id/textView3"
+        android:layout_alignLeft="@+id/userID"
+        android:layout_alignStart="@+id/userID"
+        android:layout_alignRight="@+id/userID"
+        android:layout_alignEnd="@+id/userID" />
 
 </RelativeLayout>

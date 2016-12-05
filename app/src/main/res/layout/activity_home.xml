@@ -9,8 +9,25 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context="edu.wisc.meetme.HomeActivity">
 
-    <TextView
+    <Button
+        android:text="profile"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Hello World!" />
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="119dp"
+        android:id="@+id/button4"
+        android:onClick="goToProfile" />
+
+    <Button
+        android:text="Map"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="57dp"
+        android:id="@+id/mapButton"
+        android:layout_alignParentBottom="true"
+        android:layout_alignLeft="@+id/button4"
+        android:layout_alignStart="@+id/button4"
+        android:onClick="goToMap" />
+
 </RelativeLayout>
