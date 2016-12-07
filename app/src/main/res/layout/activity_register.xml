@@ -22,7 +22,7 @@
     <EditText
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:inputType="textPassword"
+        android:inputType="textCapSentences"
         android:ems="10"
         android:id="@+id/firstname"
         android:hint="Enter your first name" />
@@ -30,7 +30,7 @@
     <EditText
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:inputType="textPassword"
+        android:inputType="textCapSentences"
         android:ems="10"
         android:id="@+id/lastname"
         android:hint="Enter your last name" />
