@@ -2,8 +2,8 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <item
-        android:id="@+id/goBackToHomePage"
+        android:id="@+id/utility"
         android:orderInCategory="100"
-        android:title="HomePage"
+        android:title="Utility"
         app:showAsAction="never" />
 </menu>

@@ -9,8 +9,10 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.CheckedTextView;
 import android.widget.ListView;
 import android.widget.Toast;
 
@@ -39,6 +41,11 @@ public class ProfileFragment extends Fragment {
     private String mParam2;
 
     private OnFragmentInteractionListener mListener;
+
+
+
+
+
 
     public ProfileFragment() {
         // Required empty public constructor
@@ -81,7 +88,7 @@ public class ProfileFragment extends Fragment {
         view = inflater.inflate(R.layout.fragment_preference, container, false);
 
 
-        SharedPreferences sharedPreferences = getActivity().getSharedPreferences("edu.wisc.meetme", Context.MODE_PRIVATE);
+        final SharedPreferences sharedPreferences = getActivity().getSharedPreferences("edu.wisc.meetme", Context.MODE_PRIVATE);
 
 
        final ArrayList<String> foodOption = new ArrayList<String>(asList(
@@ -168,19 +175,50 @@ public class ProfileFragment extends Fragment {
                 "Wings"
        ));
 
-        ArrayList<String> rememberFood = new ArrayList<>();
-        rememberFood.add("Chinese");
-        rememberFood.add("Japanese");
+
+        ListView myListView = (ListView) view.findViewById(R.id.foodList);
+
+        myListView.setChoiceMode(AbsListView.CHOICE_MODE_MULTIPLE);
 
 
-        try {
-            sharedPreferences.edit().putString("FoodPreference", ObjectSerializer.serialize(rememberFood)).apply();
+//        ArrayList<String> myFood = new ArrayList<String>();
+        ArrayAdapter<String> listViewAdapater = new ArrayAdapter<String>(
+                getActivity(),
+                android.R.layout.simple_list_item_single_choice,
+                foodOption
+        );
+        myListView.setAdapter(listViewAdapater);
 
-        } catch (IOException e) {
+        final ArrayList<String> rememberFood = new ArrayList<>();
 
-            e.printStackTrace();
+        myListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 
-        }
+                CheckedTextView checkedTextView = (CheckedTextView) view;
+
+                if (checkedTextView.isChecked()) {
+                    Log.i("Info", foodOption.get(position) + " is selected.");
+                    rememberFood.add(foodOption.get(position));
+                } else {
+                    Log.i("Info", foodOption.get(position) + " is deselected.");
+                    rememberFood.remove(foodOption.get(position));
+                }
+                Log.i("Info", rememberFood.toString());
+
+                try {
+                    sharedPreferences.edit().putString("FoodPreference", ObjectSerializer.serialize(rememberFood)).apply();
+
+                } catch (IOException e) {
+
+                    e.printStackTrace();
+
+                }
+
+            }
+        });
+
+
 
 
         ArrayList<String> loadFood = new ArrayList<>();
@@ -195,28 +233,13 @@ public class ProfileFragment extends Fragment {
 
         }
 
+        for (String value : loadFood) {
+            myListView.setItemChecked(foodOption.indexOf(value), true);
+        }
 
         Log.i("LoadFood", loadFood.toString());
 
 
-
-        ListView myListView = (ListView) view.findViewById(R.id.foodList);
-
-//        ArrayList<String> myFood = new ArrayList<String>();
-        ArrayAdapter<String> listViewAdapater = new ArrayAdapter<String>(
-                getActivity(),
-                android.R.layout.simple_list_item_1,
-                foodOption
-        );
-        myListView.setAdapter(listViewAdapater);
-
-        myListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Log.i("User select:", foodOption.get(position));
-                //Toast.makeText(getActivity(), foodOption.get(position).toString(), Toast.LENGTH_SHORT);
-            }
-        });
 
 
         return view;
