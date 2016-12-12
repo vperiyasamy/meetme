@@ -1,15 +1,20 @@
 package edu.wisc.meetme;
 
-import android.app.FragmentManager;
 import android.content.Context;
-import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.ListView;
+
+import java.util.ArrayList;
+
+import static java.util.Arrays.asList;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -19,7 +24,7 @@ import android.widget.Button;
  * Use the {@link ProfileFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class ProfileFragment extends Fragment implements View.OnClickListener{
+public class ProfileFragment extends Fragment {
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_PARAM1 = "param1";
@@ -69,10 +74,110 @@ public class ProfileFragment extends Fragment implements View.OnClickListener{
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
 
-        view = inflater.inflate(R.layout.fragment_profile, container, false);
+        view = inflater.inflate(R.layout.fragment_preference, container, false);
 
-        Button preferenceButton = (Button) view.findViewById(R.id.preferenceButton);
-        preferenceButton.setOnClickListener(this);
+       final ArrayList<String> foodOption = new ArrayList<String>(asList(
+               "Afghan",
+                "African",
+                "Ethiopian",
+                "American",
+                "Asian",
+                "Burmese",
+                "Cambodian",
+                "Chinese",
+                "Cantoness",
+                "Dim Sum",
+                "Fujian",
+                "Hunan",
+                "Peking Duck",
+                "Shanghai",
+                "Szechuan",
+                "Taiwanese",
+                "Filipino",
+                "Himalayan",
+                "Hotpot",
+                "Indonesian",
+                "Japanese",
+                "Ramen",
+                "Soba",
+                "Sushi",
+                "Udon",
+                "Korean",
+                "Malay",
+                "Mongolian",
+                "Noodle House",
+                "Thai",
+                "Tibetan",
+                "Vietnamese",
+                "Australian",
+                "BBQ",
+                "Bakery",
+                "Breakfast",
+                "Bubble Tea",
+                "Buffet",
+                "Burgers",
+                "Cajun/Creole",
+                "Caribbean",
+                "Coffee",
+                "Creperie",
+                "Desserts",
+                "Frozen Yogurt",
+                "Ice Cream",
+                "Diner",
+                "Donuts",
+                "English",
+                "Falafel",
+                "Fast Food",
+                "Food Truck",
+                "French",
+                "Fried Chicken",
+                "German",
+                "Greek",
+                "Hot Dogs",
+                "Indian",
+                "North Indian",
+                "South Indian",
+                "Irish",
+                "Italian",
+                "Latin American",
+                "Mac & Cheese",
+                "Mediterranean",
+                "Mexican",
+                "Burritos",
+                "Tacos",
+                "Tex-Mex",
+                "Middle Eastern",
+                "Pizza",
+                "Portuguese",
+                "Poutine",
+                "Sandwiches",
+                "Seafood",
+                "Southern/Soul",
+                "Spanish",
+                "Sri Lankan",
+                "Steakhouse",
+                "Vegetarian/Vegan",
+                "Wings"
+       ));
+
+        ListView myListView = (ListView) view.findViewById(R.id.foodList);
+
+//        ArrayList<String> myFood = new ArrayList<String>();
+        ArrayAdapter<String> listViewAdapater = new ArrayAdapter<String>(
+                getActivity(),
+                android.R.layout.simple_list_item_1,
+                foodOption
+        );
+        myListView.setAdapter(listViewAdapater);
+
+        myListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                Log.i("User select:", foodOption.get(position));
+            }
+        });
+
+
         return view;
     }
 
@@ -100,11 +205,7 @@ public class ProfileFragment extends Fragment implements View.OnClickListener{
         mListener = null;
     }
 
-    @Override
-    public void onClick(View v) {
-        FragmentManager manager = getFragmentManager();
-        manager.beginTransaction().replace(R.id.content_profile, new PreferenceFragment()).commit();
-    }
+
 
     /**
      * This interface must be implemented by activities that contain this
