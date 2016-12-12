@@ -111,8 +111,7 @@ public class HomeActivity extends Activity implements LocationListener {
         startup = true;
         onlineAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, R.id.friendsActive, onlineNames);
 
-        //When the user gets online, should send a ping to the server asking for list of active friends
-        //refreshFriends(getCurrentFocus());
+        //Set up button and listener to refresh list
         Button refreshButton = (Button)findViewById(R.id.refreshButton);
         refreshButton.setOnClickListener(new View.OnClickListener() {
                                            public void onClick(View v) {
@@ -133,6 +132,9 @@ public class HomeActivity extends Activity implements LocationListener {
                                            }
                                        }
         );
+
+        //When the user gets online, should send a ping to the server asking for list of active friends
+        refreshButton.callOnClick();
 
     }
 
@@ -203,6 +205,14 @@ public class HomeActivity extends Activity implements LocationListener {
     }
 
     //Button to set self as available. Query server to update user availability
+    //Should send:
+    // 1. Phone number
+    // 2. Email
+    // 3. First name
+    // 4. Last name
+    // 5. Latitude
+    // 6. Longitude
+    // 7. 17 strings (preferences package), revise later
     public void setAvailable(View v){
         //Access app user's online status and set as active
 
@@ -217,7 +227,7 @@ public class HomeActivity extends Activity implements LocationListener {
         JSONArray serverList;
         //Call to server here
         //Use main user's id/phone number, make HTTP request, getting back a JSON
-        serverList = refreshReply; //Replace with function call for a server query!!//////////////////////////////////////////////
+        serverList = refreshReply;
         //Returns JSONArray where every fourth element are
         // 1. ID (phone number),
         // 2. First Name,
@@ -310,7 +320,16 @@ public class HomeActivity extends Activity implements LocationListener {
 
         online = gpsSort(online);
         offline = alphaSort(offline);
+        updateNames();
 
+    }
+
+    private void updateNames(){
+        //Update the names displayed on the screen
+        onlineNames.clear();
+        for(User u: online){
+            onlineNames.add(u.getName());
+        }
     }
 
 

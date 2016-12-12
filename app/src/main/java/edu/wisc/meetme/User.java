@@ -50,6 +50,14 @@ public class User {
         return (name[0] + " " + name[1]);
     }
 
+    public String getFirst(){
+        return name[0];
+    }
+
+    public String getLast() {
+        return name[1];
+    }
+
     public Location getLocation(){
         return location;
     }
