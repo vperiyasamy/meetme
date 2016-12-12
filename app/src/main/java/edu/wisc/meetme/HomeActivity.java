@@ -117,11 +117,11 @@ public class HomeActivity extends Activity implements LocationListener {
         //Call to server here
         //Use main user's id/phone number, make HTTP request, getting back a JSON
         serverList = new JSONArray(); //Replace with function call for a server query!!//////////////////////////////////////////////
-        //Returns JSONArray where every third element are
+        //Returns JSONArray where every fourth element are
         // 1. ID (phone number),
         // 2. First Name,
         // 3. Last Name,
-        // 4. Active/Inactive Status
+        // 4. Active/Inactive Status (boolean)
 
         //If refreshing on startup, create all new user objects
         if(startup){
@@ -129,7 +129,7 @@ public class HomeActivity extends Activity implements LocationListener {
                 try {
                     int id = (int) serverList.get(i);
                     String[] name = {serverList.getString(i + 1), serverList.getString(i + 2)};
-                    boolean active = (boolean) serverList.get(i + 3);
+                    boolean active = serverList.get(i + 3).equals("true");
                     User curr = new User(id, name[0], name[1], active);
                     allFriends.add(curr);
                     if(active){
