@@ -280,27 +280,59 @@ class GetRecommendation(webapp2.RequestHandler):
 	    </html>\n''') 
 
 
-class MakeRequest(webapp2.RequestHandler):
+class SetAvailable(webapp2.RequestHandler):
 
-	def make_request(self, phoneNumber, email, firstName, lastName, lat, lon, categories, votes):
-		entry = db.GqlQuery("SELECT * FROM StoredData where tag = :1", tag).get()
+	def set_available(self, phoneNumber, email, firstName, lastName, lat, lon, categories):
+
+		#update user in db to be active
+		entry = db.GqlQuery("SELECT * FROM ActiveUsers WHERE user = :1", phoneNumber).get()
 		if entry:
-			value = entry.value
-		else: value = ""
-	    # Python supports the creation of anonymous functions (i.e. functions that are 
-	    # not bound to a name) at runtime, using a construct called "lambda". 
-	    # http://www.secnetix.de/olli/Python/lambda_functions.hawk
-	    # json for python:  http://docs.python.org/2/library/json.html
-		returnVal(self, lambda : json.dump(["VALUE", tag, value], self.response.out))
-    
-	    ## The above call to returnVal is equivalent to:
-	    #self.response.headers['Content-Type'] = 'application/jsonrequest'
-	    #json.dump(["VALUE", tag, value], self.response.out)
+			# do nothing 
+		else: 
+			entry = ActiveUsers(user = user, active = True)
+		entry.put()
+
+		bucket_name = os.environ.get('BUCKET_NAME', app_identity.get_default_gcs_bucket_name())
+		#self.response.headers['Content-Type'] = 'text/plain'
+		#self.response.write('Demo GCS Application running from Version: ' + os.environ['CURRENT_VERSION_ID'] + '\n')
+		#self.response.write('Using bucket name: ' + bucket_name + '\n\n')
+
+		bucket = '/' + bucket_name
+		filename = bucket + '/' + phoneNumber + '.txt'
+
+		write_retry_params = gcs.RetryParams(backoff_factor=1.1)
+		try:
+			gcs_file = gcs.open(filename,'w', content_type='text/plain', retry_params=write_retry_params)
+			gcs_file.write((phoneNumber + '\n').encode('utf-8'))
+			gcs_file.write((email + '\n').encode('utf-8'))
+			gcs_file.write((firstName + '\n').encode('utf-8'))
+			gcs_file.write((lastName + '\n').encode('utf-8'))
+			gcs_file.write((lat + '\n').encode('utf-8'))
+			gcs_file.write((lon + '\n').encode('utf-8'))
+
+			for category_vote in categories:
+				write_string = category_vote[0] + ' ' + category_vote[1] + '\n'
+				gcs_file.write(write_string.encode('utf-8'))
+
+			gcs_file.close()
+			returnVal(self, lambda : json.dump(["UserAvailable", tag, value], self.response.out))
+		
+		except gcs.NotFoundError:
+			returnVal(self, lambda : json.dump(["UserNotFound", tag, value], self.response.out))
     
 
 	def post(self):
 		# https://developers.google.com/appengine/docs/python/tools/webapp/requestclass
 		
+		phoneNumber = self.request.get('phone')
+		email = self.request.get('email')
+		firstName = self.request.get('first')
+		lastName = self.request.get('last')
+		lat = self.request.get('lat')
+		lon = self.request.get('lon')
+
+
+		cats = []
 		categories = []
 
 		# to set an agreed amount of data over the server that is not 84 different strings,
@@ -309,34 +341,79 @@ class MakeRequest(webapp2.RequestHandler):
 		# server side
 
 		cat1 = self.request.get('cat1')
-		cat1.split(',')
+		cats.append(cat1)
 		cat2 = self.request.get('cat2')
+		cats.append(cat2)
 		cat3 = self.request.get('cat3')
+		cats.append(cat3)
 		cat4 = self.request.get('cat4')
+		cats.append(cat4)
 		cat5 = self.request.get('cat5')
+		cats.append(cat5)
 		cat6 = self.request.get('cat6')
+		cats.append(cat6)
 		cat7 = self.request.get('cat7')
+		cats.append(cat7)
 		cat8 = self.request.get('cat8')
+		cats.append(cat8)
 		cat9 = self.request.get('cat9')
+		cats.append(cat9)
 		cat10 = self.request.get('cat10')
+		cats.append(cat10)
 		cat11 = self.request.get('cat11')
+		cats.append(cat11)
 		cat12 = self.request.get('cat12')
+		cats.append(cat12)
 		cat13 = self.request.get('cat13')
+		cats.append(cat13)
 		cat14 = self.request.get('cat14')
+		cats.append(cat14)
 		cat15 = self.request.get('cat15')
+		cats.append(cat15)
 		cat16 = self.request.get('cat16')
+		cats.append(cat16)
 		cat17 = self.request.get('cat17')
+		cats.append(cat17)
 
-		self.make_request(categories)
+		for cat in cats:
+			pairs = cat.split(';')
+			for pair in pairs:
+				segs = pair.split(',')
+				vote = (segs[0], segs[1])
+				categories.append(vote)
+
+		self.set_available(phoneNumber, email, firstName, lastName, lat, lon, categories)
 
 	def get(self):
 		self.response.out.write('''
 	    <html><body>
-	    <form action="/getvalue" method="post"
+	    <form action="/setavailable" method="post"
 	          enctype=application/x-www-form-urlencoded>
-	       <p>Tag<input type="text" name="tag" /></p>
+	       <p>Phone<input type="text" name="phone" /></p>
+	       <p>Email<input type="text" name="email" /></p>
+	       <p>First<input type="text" name="first" /></p>
+	       <p>Last<input type="text" name="last" /></p>
+	       <p>Lat<input type="text" name="lat" /></p>
+	       <p>Lon<input type="text" name="lon" /></p>
+	       <p>cat1<input type="text" name="cat1" /></p>
+	       <p>cat2<input type="text" name="cat2" /></p>
+	       <p>cat3<input type="text" name="cat3" /></p>
+	       <p>cat4<input type="text" name="cat4" /></p>
+	       <p>cat5<input type="text" name="cat5" /></p>
+	       <p>cat6<input type="text" name="cat6" /></p>
+	       <p>cat7<input type="text" name="cat7" /></p>
+	       <p>cat8<input type="text" name="cat8" /></p>
+	       <p>cat9<input type="text" name="cat9" /></p>
+	       <p>cat10<input type="text" name="cat10" /></p>
+	       <p>cat11<input type="text" name="cat11" /></p>
+	       <p>cat12<input type="text" name="cat12" /></p>
+	       <p>cat13<input type="text" name="cat13" /></p>
+	       <p>cat14<input type="text" name="cat14" /></p>
+	       <p>cat15<input type="text" name="cat15" /></p>
+	       <p>cat16<input type="text" name="cat16" /></p>
+	       <p>cat17<input type="text" name="cat17" /></p>
 	       <input type="hidden" name="fmt" value="html">
-	       <input type="submit" value="Get value">
+	       <input type="submit" value="Set Available">
 	    </form></body></html>\n''')
 
 class RegisterUser(webapp2.RequestHandler):
