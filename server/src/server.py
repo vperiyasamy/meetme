@@ -200,19 +200,17 @@ class GetRecommendation(webapp2.RequestHandler):
 		url = url[:-1]
 
 		try:
-            #form_data = urllib.urlencode(UrlPostHandler.form_fields)
-            #headers = {'Content-Type': 'application/x-www-form-urlencoded'}
-            result = urlfetch.fetch( url=url, method=urlfetch.GET, headers = {"Content-Type": "application/json"})
-
-            data = json.loads(result.content)
-            name = data['response']['venues'][0]['name']
-            lat = data['response']['venues'][0]['location']['lat']
-            lon = data['response']['venues'][0]['location']['lng']
+			result = urlfetch.fetch( url=url, method=urlfetch.GET, headers = {"Content-Type": "application/json"})
+			
+			data = json.loads(result.content)
+			name = data['response']['venues'][0]['name']
+			lat = data['response']['venues'][0]['location']['lat']
+			lon = data['response']['venues'][0]['location']['lng']
             
-            returnVal(self, lambda : json.dump([name, lat, lon], self.response.out))
+			returnVal(self, lambda : json.dump([name, lat, lon], self.response.out))
 
-        except urlfetch.Error:
-            logging.exception('Caught exception fetching url')
+		except urlfetch.Error:
+			logging.exception('Caught exception fetching url')
 
 
 	def get_midpoint(pairs):
