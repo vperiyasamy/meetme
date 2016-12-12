@@ -116,7 +116,7 @@ class GetValue(webapp2.RequestHandler):
 
 class GetRecommendation(webapp2.RequestHandler):
 
-	def get_recommendation():
+	def get_recommendation(self):
 		bucket_name = os.environ.get('BUCKET_NAME', app_identity.get_default_gcs_bucket_name())
 		bucket = '/' + bucket_name
 
@@ -152,6 +152,7 @@ class GetRecommendation(webapp2.RequestHandler):
 				gcs_file = gcs.open(filename,'r')
 				
 				# skip phone number, email, first name, and last name
+				gcs_file.readline()
 				gcs_file.readline()
 				gcs_file.readline()
 				gcs_file.readline()
@@ -204,8 +205,12 @@ class GetRecommendation(webapp2.RequestHandler):
             result = urlfetch.fetch( url=url, method=urlfetch.GET, headers = {"Content-Type": "application/json"})
 
             data = json.loads(result.content)
-            data[]
+            name = data['response']['venues'][0]['name']
+            lat = data['response']['venues'][0]['location']['lat']
+            lon = data['response']['venues'][0]['location']['lng']
             
+            returnVal(self, lambda : json.dump([name, lat, lon], self.response.out))
+
         except urlfetch.Error:
             logging.exception('Caught exception fetching url')
 
@@ -259,8 +264,8 @@ class GetRecommendation(webapp2.RequestHandler):
 
 	def post(self):
 		# https://developers.google.com/appengine/docs/python/tools/webapp/requestclass
-		pairs = self.request.get('pairs')
-		self.get_midpoint(pairs)
+		# pairs = self.request.get('pairs')
+		self.get_recommendation(pairs)
 
 	def get(self):
 		self.response.out.write('''
@@ -268,13 +273,71 @@ class GetRecommendation(webapp2.RequestHandler):
 	    <body>
 	    <form action="/getrecommendation" method="post"
 	          enctype=application/x-www-form-urlencoded>
-	       <p>Tag<input type="text" name="tag" /></p>
 	       <input type="hidden" name="fmt" value="html">
-	       <input type="submit" value="Get value">
+	       <input type="submit" value="Get Recommendation">
 	    </form>
 	    </body>
 	    </html>\n''') 
 
+
+class MakeRequest(webapp2.RequestHandler):
+
+	def make_request(self, phoneNumber, email, firstName, lastName, lat, lon, categories, votes):
+		entry = db.GqlQuery("SELECT * FROM StoredData where tag = :1", tag).get()
+		if entry:
+			value = entry.value
+		else: value = ""
+	    # Python supports the creation of anonymous functions (i.e. functions that are 
+	    # not bound to a name) at runtime, using a construct called "lambda". 
+	    # http://www.secnetix.de/olli/Python/lambda_functions.hawk
+	    # json for python:  http://docs.python.org/2/library/json.html
+		returnVal(self, lambda : json.dump(["VALUE", tag, value], self.response.out))
+    
+	    ## The above call to returnVal is equivalent to:
+	    #self.response.headers['Content-Type'] = 'application/jsonrequest'
+	    #json.dump(["VALUE", tag, value], self.response.out)
+    
+
+	def post(self):
+		# https://developers.google.com/appengine/docs/python/tools/webapp/requestclass
+		
+		categories = []
+
+		# to set an agreed amount of data over the server that is not 84 different strings,
+		# the strings will be concatenated on the android side with commas separating values,
+		# then they will be sent in 17 packages of agreed length and reprocessed on the
+		# server side
+
+		cat1 = self.request.get('cat1')
+		cat1.split(',')
+		cat2 = self.request.get('cat2')
+		cat3 = self.request.get('cat3')
+		cat4 = self.request.get('cat4')
+		cat5 = self.request.get('cat5')
+		cat6 = self.request.get('cat6')
+		cat7 = self.request.get('cat7')
+		cat8 = self.request.get('cat8')
+		cat9 = self.request.get('cat9')
+		cat10 = self.request.get('cat10')
+		cat11 = self.request.get('cat11')
+		cat12 = self.request.get('cat12')
+		cat13 = self.request.get('cat13')
+		cat14 = self.request.get('cat14')
+		cat15 = self.request.get('cat15')
+		cat16 = self.request.get('cat16')
+		cat17 = self.request.get('cat17')
+
+		self.make_request(categories)
+
+	def get(self):
+		self.response.out.write('''
+	    <html><body>
+	    <form action="/getvalue" method="post"
+	          enctype=application/x-www-form-urlencoded>
+	       <p>Tag<input type="text" name="tag" /></p>
+	       <input type="hidden" name="fmt" value="html">
+	       <input type="submit" value="Get value">
+	    </form></body></html>\n''')
 
 class RegisterUser(webapp2.RequestHandler):
 

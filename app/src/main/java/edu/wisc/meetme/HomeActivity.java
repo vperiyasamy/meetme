@@ -17,8 +17,31 @@ import android.util.Log;
 import android.view.View;
 import android.widget.ArrayAdapter;
 
-//<<<<<<< HEAD
-//=======
+import android.os.AsyncTask;
+import android.widget.Toast;
+import android.app.Activity;
+import android.view.Menu;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.TextView;
+import android.view.KeyEvent;
+import android.view.inputmethod.EditorInfo;
+
+import org.apache.http.HttpResponse;
+import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.ResponseHandler;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.impl.client.BasicResponseHandler;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.message.BasicNameValuePair;
+import org.apache.http.util.EntityUtils;
+import org.apache.http.NameValuePair;
+import org.json.JSONArray;
+import org.json.JSONException;
+
 import com.google.android.gms.appindexing.Action;
 import com.google.android.gms.appindexing.AppIndex;
 import com.google.android.gms.appindexing.Thing;
@@ -31,6 +54,12 @@ import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.StringTokenizer;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.List;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+
 
 //public class HomeActivity extends Activity {
 
@@ -56,7 +85,6 @@ public class HomeActivity extends Activity implements LocationListener {
     //    Intent i = new Intent(HomeActivity.this, MapsActivity.class);
     //    startActivity(i);
     //}
-//>>>>>>> refs/remotes/vperiyasamy/master
 
     ArrayList<User> testFriends;
     ArrayList<String> onlineNames;
@@ -81,11 +109,80 @@ public class HomeActivity extends Activity implements LocationListener {
         refreshFriends(getCurrentFocus());
         onlineAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, R.id.friendsActive, onlineNames);
 
-//<<<<<<< HEAD
         //When the user gets online, should send a ping to the server asking for list of active friends
         //refreshFriends(getCurrentFocus());
+        Button refreshButton = (Button)findViewById(R.id.refreshButton);
+        refreshButton.setOnClickListener(new View.OnClickListener() {
+                                           public void onClick(View v) {
+                                               //Store
+                                               String[ ] aStr = new String[1] ;
+
+                                               // fill in string array[0] with phone number from file storage
+                                               // aStr[0] = ((EditText)findViewById(R.id.phoneno)).getText().toString();
+                                               
+
+                                               if (!aStr[0].isEmpty())
+                                               {
+                                                   //Execute register request
+                                                   httpRefresh hR = new httpRefresh();
+                                                   hR.execute(aStr);
+                                               }
+                                           }
+                                       }
+        );
 
     }
+
+    protected class httpRefresh extends AsyncTask<String, Void, String> {
+        @Override
+        protected String doInBackground(String... strs) {
+            String reply = null;
+            String temp=""; //capture acknowledgement from server, if any
+
+            //Construct an HTTP POST
+            HttpClient httpclient = new DefaultHttpClient();
+            HttpPost registerUser = new HttpPost("http://meetmeece454.appspot.com/refreshgroup");
+
+            // Values to be sent from android app to server
+            ArrayList<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>();
+
+            // "tag" is the name of the text form on the webserver
+            // "value" is the value that the client is submitting to the server
+            // These two are specified by the server. The cilent side program must respect.
+            nameValuePairs.add(new BasicNameValuePair("phone", strs[0]));
+
+            try {
+                UrlEncodedFormEntity httpEntity = new UrlEncodedFormEntity(nameValuePairs);
+                refreshUser.setEntity(httpEntity);
+
+                //Execute HTTP POST
+                HttpResponse response = httpclient.execute(refreshUser);
+                //Capture acknowledgement from server
+                // In this demo app, the server returns "Update" if the tag already exists;
+                // Otherwise, the server returns "New"
+                temp = EntityUtils.toString(response.getEntity());
+            }
+            catch (ClientProtocolException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                System.out.println("HTTP IO Exception.");
+                e.printStackTrace();
+            }
+
+
+            // Decompose the server's acknowledgement into a JSON array
+            try {
+                JSONArray jsonArray = new JSONArray(temp);
+                //reply = jsonArray.getString(0);
+
+            } catch (JSONException e) {
+                System.out.println("Error in JSON decoding");
+                e.printStackTrace();
+            }
+
+            return reply;
+        }
+
 
     //Queries server for recommendation, once receives info, displays popup with info.
     //Query should return:
