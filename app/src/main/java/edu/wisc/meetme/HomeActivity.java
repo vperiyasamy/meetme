@@ -94,7 +94,10 @@ public class HomeActivity extends Activity implements LocationListener {
     int[] testPrefs = {0,1,1,1,0};
     ArrayAdapter<String> onlineAdapter;
     User testme = new User(0,"me", "me", true); //test User representing app user
+    JSONArray refreshReply;
+    User me;
     boolean startup;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -106,7 +109,6 @@ public class HomeActivity extends Activity implements LocationListener {
         onlineNames.add("Johnny Appleseed");
         /////////////////////////////////////////////
         startup = true;
-        refreshFriends(getCurrentFocus());
         onlineAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, R.id.friendsActive, onlineNames);
 
         //When the user gets online, should send a ping to the server asking for list of active friends
@@ -126,6 +128,7 @@ public class HomeActivity extends Activity implements LocationListener {
                                                    //Execute register request
                                                    httpRefresh hR = new httpRefresh();
                                                    hR.execute(aStr);
+                                                   refreshFriends();
                                                }
                                            }
                                        }
@@ -137,11 +140,11 @@ public class HomeActivity extends Activity implements LocationListener {
         @Override
         protected String doInBackground(String... strs) {
             String reply = null;
-            String temp=""; //capture acknowledgement from server, if any
+            String temp = ""; //capture acknowledgement from server, if any
 
             //Construct an HTTP POST
             HttpClient httpclient = new DefaultHttpClient();
-            HttpPost registerUser = new HttpPost("http://meetmeece454.appspot.com/refreshgroup");
+            HttpPost refreshUser = new HttpPost("http://meetmeece454.appspot.com/refreshgroup");
 
             // Values to be sent from android app to server
             ArrayList<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>();
@@ -161,8 +164,7 @@ public class HomeActivity extends Activity implements LocationListener {
                 // In this demo app, the server returns "Update" if the tag already exists;
                 // Otherwise, the server returns "New"
                 temp = EntityUtils.toString(response.getEntity());
-            }
-            catch (ClientProtocolException e) {
+            } catch (ClientProtocolException e) {
                 e.printStackTrace();
             } catch (IOException e) {
                 System.out.println("HTTP IO Exception.");
@@ -173,6 +175,8 @@ public class HomeActivity extends Activity implements LocationListener {
             // Decompose the server's acknowledgement into a JSON array
             try {
                 JSONArray jsonArray = new JSONArray(temp);
+                refreshReply = jsonArray;
+                reply = "refresh complete";
                 //reply = jsonArray.getString(0);
 
             } catch (JSONException e) {
@@ -182,6 +186,7 @@ public class HomeActivity extends Activity implements LocationListener {
 
             return reply;
         }
+    }
 
 
     //Queries server for recommendation, once receives info, displays popup with info.
@@ -203,17 +208,16 @@ public class HomeActivity extends Activity implements LocationListener {
 
         //Send query to server to update user info with online status
 
-        //Send refresh request as well for the heck of it?
-        refreshFriends(getCurrentFocus());
+        //Activate fragment to update preferences
 
     }
 
     //Method to refresh the active friends list. Should ping server for updated list.
-    public void refreshFriends(View v){
+    public void refreshFriends(){
         JSONArray serverList;
         //Call to server here
         //Use main user's id/phone number, make HTTP request, getting back a JSON
-        serverList = new JSONArray(); //Replace with function call for a server query!!//////////////////////////////////////////////
+        serverList = refreshReply; //Replace with function call for a server query!!//////////////////////////////////////////////
         //Returns JSONArray where every fourth element are
         // 1. ID (phone number),
         // 2. First Name,
