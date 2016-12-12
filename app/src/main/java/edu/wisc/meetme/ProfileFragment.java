@@ -1,6 +1,7 @@
 package edu.wisc.meetme;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 import android.app.Fragment;
@@ -11,8 +12,11 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+import android.widget.Toast;
 
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.StringTokenizer;
 
 import static java.util.Arrays.asList;
 
@@ -75,6 +79,10 @@ public class ProfileFragment extends Fragment {
         // Inflate the layout for this fragment
 
         view = inflater.inflate(R.layout.fragment_preference, container, false);
+
+
+        SharedPreferences sharedPreferences = getActivity().getSharedPreferences("edu.wisc.meetme", Context.MODE_PRIVATE);
+
 
        final ArrayList<String> foodOption = new ArrayList<String>(asList(
                "Afghan",
@@ -160,6 +168,38 @@ public class ProfileFragment extends Fragment {
                 "Wings"
        ));
 
+        ArrayList<String> rememberFood = new ArrayList<>();
+        rememberFood.add("Chinese");
+        rememberFood.add("Japanese");
+
+
+        try {
+            sharedPreferences.edit().putString("FoodPreference", ObjectSerializer.serialize(rememberFood)).apply();
+
+        } catch (IOException e) {
+
+            e.printStackTrace();
+
+        }
+
+
+        ArrayList<String> loadFood = new ArrayList<>();
+
+        try {
+
+            loadFood = (ArrayList<String>) ObjectSerializer.deserialize(sharedPreferences.getString("FoodPreference", ObjectSerializer.serialize(new ArrayList<String>())));
+
+        } catch (IOException e) {
+
+            e.printStackTrace();
+
+        }
+
+
+        Log.i("LoadFood", loadFood.toString());
+
+
+
         ListView myListView = (ListView) view.findViewById(R.id.foodList);
 
 //        ArrayList<String> myFood = new ArrayList<String>();
@@ -174,6 +214,7 @@ public class ProfileFragment extends Fragment {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 Log.i("User select:", foodOption.get(position));
+                //Toast.makeText(getActivity(), foodOption.get(position).toString(), Toast.LENGTH_SHORT);
             }
         });
 
