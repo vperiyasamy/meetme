@@ -23,6 +23,8 @@ import org.json.JSONArray;
 import org.json.JSONException;
 //import org.apache.commons.compress.utils.IOUtils;
 
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.widget.Toast;
@@ -42,6 +44,9 @@ import android.view.inputmethod.EditorInfo;
  */
 
 public class RegisterActivity extends Activity {
+
+    SharedPreferences sharedPreferences = this.getSharedPreferences("edu.wisc.meetme", Context.MODE_PRIVATE);
+
 
 
     @Override
@@ -70,9 +75,19 @@ public class RegisterActivity extends Activity {
                                                    // DISPLAY ERROR MESSAGE TO USER THAT FIELDS ARE INCOMPLETE
                                                	Toast.makeText(getApplicationContext(), "Please fill in all fields before registration", Toast.LENGTH_SHORT).show();
                                                }
+                                               sharedPreferences.edit().putString("Phone", aStr[0]).apply();
+                                               sharedPreferences.edit().putString("Email", aStr[1]).apply();
+                                               sharedPreferences.edit().putString("FirstName", aStr[2]).apply();
+                                               sharedPreferences.edit().putString("LastName", aStr[3]).apply();
                                            }
+
+
+
                                        }
         );
+
+
+
     }
 
 

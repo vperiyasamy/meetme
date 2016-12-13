@@ -35,7 +35,7 @@ public class LoginActivity extends Activity {
         SharedPreferences sharedPreferences = this.getSharedPreferences("edu.wisc.meetme", Context.MODE_PRIVATE);
 
         // Save the data to local memory
-        sharedPreferences.edit().putString("Username", "Android").apply();
+        sharedPreferences.edit().putString("Username", "MeetMe").apply();
 
         // Get the data back from local memory
         String userName = sharedPreferences.getString("Username", ""); // "" menas default value
