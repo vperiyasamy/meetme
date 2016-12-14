@@ -113,7 +113,7 @@ public class FriendsFragment extends Fragment {
                                                  String[ ] aStr = new String[1] ;
 
                                                  // fill in string array[0] with phone number from file storage
-                                                 // aStr[0] = ((EditText)findViewById(R.id.phoneno)).getText().toString();
+                                                 aStr[0] = me.getID();
 
 
                                                  if (!aStr[0].isEmpty())
