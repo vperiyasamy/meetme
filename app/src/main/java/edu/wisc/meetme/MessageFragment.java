@@ -91,6 +91,37 @@ public class MessageFragment extends Fragment {
         mListener = null;
     }
 
+    //Queries server for recommendation, once receives info, displays popup with info.
+    //Query should return:
+    // 1. Name of restaurant
+    // 2. Location
+    public void getRecommendation(View v){
+        //Query server, receive JSON with restaurant info
+
+        //Filter through info
+
+        //Display info in popup
+
+    }
+
+    //Button to set self as available. Query server to update user availability
+    //Should send:
+    // 1. Phone number
+    // 2. Email
+    // 3. First name
+    // 4. Last name
+    // 5. Latitude
+    // 6. Longitude
+    // 7. 17 strings (preferences package), revise later
+    public void setAvailable(View v){
+        //Access app user's online status and set as active
+
+        //Send query to server to update user info with online status
+
+        //Activate fragment to update preferences
+
+    }
+
     /**
      * This interface must be implemented by activities that contain this
      * fragment to allow an interaction in this fragment to be communicated

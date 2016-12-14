@@ -10,23 +10,15 @@ public class User {
     //Denotes the specific preferences and the order of the tallies in the "prefs" array
     // For dietary restrictions (gluten-free, vegan, etc) have them on a weight based system
 
-    public String[] PREFS = {
-            "Mexican",
-            "Italian",
-            "Chinese",
-            "Indian",
-            "American"
-    };
-    public int NUMPREFS = 5;
 
-    private int ID; //User id used as key for server, could be linked to phone number
+    private String ID; //User id used as key for server, could be linked to phone number
     private String[] name;
     private boolean online; //boolean that denotes whether user is online
     private int prefs[]; //Array with user preferences. Will likely be laid out in specific order
     private Location location; //not sure what data structure location is kept as, so int for now
 
     //Constructor
-    public User(int id, String first, String last, boolean active){
+    public User(String id, String first, String last, boolean active){
         ID = id;
         name = new String[2];
         name[0] = first;
@@ -42,7 +34,7 @@ public class User {
         return online;
     }
 
-    public int getID(){
+    public String getID(){
         return ID;
     }
 

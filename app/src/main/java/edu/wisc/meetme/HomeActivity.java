@@ -93,7 +93,6 @@ public class HomeActivity extends Activity implements LocationListener {
     ArrayList<User> offline = new ArrayList<User>();
     int[] testPrefs = {0,1,1,1,0};
     ArrayAdapter<String> onlineAdapter;
-    User testme = new User(0,"me", "me", true); //test User representing app user
     JSONArray refreshReply;
     User me;
     boolean startup;
@@ -103,11 +102,6 @@ public class HomeActivity extends Activity implements LocationListener {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
 
-        ///TEST CODE DELETE LATER//////////////////
-        onlineNames.add("Billy Bob");
-        onlineNames.add("Abby Smith");
-        onlineNames.add("Johnny Appleseed");
-        /////////////////////////////////////////////
         startup = true;
         onlineAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, R.id.friendsActive, onlineNames);
 
@@ -215,7 +209,7 @@ public class HomeActivity extends Activity implements LocationListener {
     // 7. 17 strings (preferences package), revise later
     public void setAvailable(View v){
         //Access app user's online status and set as active
-
+        me.setOnline(true);
         //Send query to server to update user info with online status
 
         //Activate fragment to update preferences
@@ -238,7 +232,7 @@ public class HomeActivity extends Activity implements LocationListener {
         if(startup){
             for (int i = 0; i < serverList.length(); i += 4) {
                 try {
-                    int id = (int) serverList.get(i);
+                    String id = (String) serverList.get(i);
                     String[] name = {serverList.getString(i + 1), serverList.getString(i + 2)};
                     boolean active = serverList.get(i + 3).equals("true");
                     User curr = new User(id, name[0], name[1], active);
@@ -261,12 +255,12 @@ public class HomeActivity extends Activity implements LocationListener {
             for(int i = 0; i < serverList.length(); i+= 4){
                 try {
                     int currindex = 0;
-                    int id = (int) serverList.get(i);
+                    String id = (String) serverList.get(i);
                     String[] name = {serverList.getString(i + 1), serverList.getString(i + 2)};
                     boolean active = (boolean) serverList.get(i + 3);
                     boolean usercreated = false;
                     for(int j = 0; j < allFriends.size(); j++){
-                        if(id == allFriends.get(j).getID()){
+                        if(id.equals(allFriends.get(j).getID())){
                             usercreated = true;
                             currindex = j;
                         }
@@ -291,7 +285,7 @@ public class HomeActivity extends Activity implements LocationListener {
                             //If lastState was online, need to remove user from online friends and place them in offline friends
                             if(lastState){
                                 for(User user : online){
-                                    if(user.getID() == curr.getID()){
+                                    if(user.getID().equals(curr.getID())){
                                         online.remove(user);
                                         offline.add(user);
                                         user.setOnline(active);
@@ -301,7 +295,7 @@ public class HomeActivity extends Activity implements LocationListener {
                             //Similarly, if last status was offline, need to move to online list
                             else{
                                 for(User user : offline){
-                                    if(user.getID() == curr.getID()){
+                                    if(user.getID().equals(curr.getID())){
                                         offline.remove(user);
                                         online.add(user);
                                         user.setOnline(active);
@@ -484,7 +478,7 @@ public class HomeActivity extends Activity implements LocationListener {
                 //compare u's distance from user with the distances within sortedList
                 for (User q : sortedList) {
                     Location uloc = u.getLocation();
-                    Location meloc = testme.getLocation(); ///Replace later with reference to main user/////////////
+                    Location meloc = me.getLocation(); ///Replace later with reference to main user/////////////
                     Location qloc = q.getLocation();
                     //Once gps is properly coded, will have to change how distance is calculated///
                     udis = getDistanceFromLatLonInKm(uloc.getLatitude(), uloc.getLongitude(),
