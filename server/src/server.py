@@ -22,9 +22,13 @@ MAIN_PAGE_HTML = """\
     </br>
     <a href="getvalue">QueryValue </a>
     </br>
-    <a href="getrecommendation">GetMidpoint </a>
+    <a href="getrecommendation">GetRecommendation </a>
+    </br>
+    <a href="setavailable">SetAvailable </a>
     </br>
     <a href="registeruser">RegisterUser </a>
+    </br>
+    <a href="unregisteruser">UnregisterUser </a>
     </br>
     <a href="refreshgroup">RefreshGroup </a>
   </body>
@@ -55,9 +59,9 @@ class SetActive(webapp2.RequestHandler):
 		entry = db.GqlQuery("SELECT * FROM ActiveUsers WHERE user = :1", user).get()
 		if entry:
 			returnVal(self, lambda : json.dump(["Updated"], self.response.out)) 
-		else: 
-			entry = ActiveUsers(user = user, active = active)
-			returnVal(self, lambda : json.dump(["Stored"], self.response.out)) 
+		else:
+			returnVal(self, lambda : json.dump(["Stored"], self.response.out))
+		entry = ActiveUsers(key_name = user, user = user, active = active)
 		entry.put()
 
 	def post(self):
@@ -75,7 +79,7 @@ class SetActive(webapp2.RequestHandler):
 		<form action="/setactive" method="post"
 	          enctype=application/x-www-form-urlencoded>
 	       <p>User<input type="text" name="user" /></p>
-	       <p>Active<input type="text" name="active" /></p>
+	       <p>Value<input type="text" name="value" /></p>
 	       <input type="hidden" name="fmt" value="html">
 	       <input type="submit" value="Set User Active">
 	    </form></body></html>\n''')
@@ -115,6 +119,52 @@ class GetValue(webapp2.RequestHandler):
    
 
 class GetRecommendation(webapp2.RequestHandler):
+
+	def get_midpoint(self, pairs):
+		cartesian = []
+		w = 0
+
+		# convert latitude and longitude to cartesian coordinates
+		for lat, lon in pairs:
+			# convert to radians
+			lat = lat * (math.pi) / 180 
+			lon = lon * (math.pi) / 180
+
+			# cartesian conversion
+			x = math.cos(lat) * math.cos(lon)
+			y = math.cos(lat) * math.sin(lon)
+			z = math.sin(lat)
+
+			# add to list of coordinates
+			xyz = (x, y, z)
+			cartesian.append(xyz)
+
+			w += 1  # w represents the weight of each location, we will take it to be 1 equally for all
+
+		# these will be the final cartesian coordinates of the midpoint
+		x = 0
+		y = 0
+		z = 0
+
+		#next, compute weighted average of each coordinate
+		for xyz in cartesian:
+			x += xyz[0]
+			y += xyz[1]
+			z += xyz[2]
+
+		x /= w
+		y /= w
+		z /= w
+
+		#lastly, convert back to latitude and longitude
+		lon = math.atan2(y, x)
+		hyp = math.sqrt( (x * x) + (y * y) )
+		lat = math.atan2(z, hyp)
+
+		lat = lat * 180 / math.pi
+		lon = lon * 180 / math.pi
+
+		return (lat, lon)
 
 	def get_recommendation(self):
 		bucket_name = os.environ.get('BUCKET_NAME', app_identity.get_default_gcs_bucket_name())
@@ -180,7 +230,7 @@ class GetRecommendation(webapp2.RequestHandler):
 				returnVal(self, lambda : json.dump(["User not found"], self.response.out))
 
 		# call midpoint function to find geographic midpoint
-		midpoint = get_midpoint(coordinates)
+		midpoint = self.get_midpoint(coordinates)
 
 		# choose maximum voted categories by votes
 		preferences = sorted(preferences, key=preferences.get, reverse=True)[:10]
@@ -188,9 +238,9 @@ class GetRecommendation(webapp2.RequestHandler):
 		#category = max(preferences, key=preferences.get)
 
 		url = 'https://api.foursquare.com/v2/venues/search?v=20161210&ll='
-		url += midpoint[0]
+		url += str(midpoint[0])
 		url += ','
-		url += midpoint[1]
+		url += str(midpoint[1])
 		url += '&client_id=UGTZZ2JKSHYYCYADYWZ0GRO5C5F0TJOWNTK4JN401AWR444Z&client_secret=EVKPHZ0UXMS1F0PJP5S4UKU4IL0TMHXFWTLEIL3FFBGLNZAF&radius=800&categoryId='
 
 		for category in preferences:
@@ -206,64 +256,17 @@ class GetRecommendation(webapp2.RequestHandler):
 			name = data['response']['venues'][0]['name']
 			lat = data['response']['venues'][0]['location']['lat']
 			lon = data['response']['venues'][0]['location']['lng']
-            
+
 			returnVal(self, lambda : json.dump([name, lat, lon], self.response.out))
 
 		except urlfetch.Error:
 			logging.exception('Caught exception fetching url')
 
 
-	def get_midpoint(pairs):
-		cartesian = []
-		w = 0
-
-		# convert latitude and longitude to cartesian coordinates
-		for lat, lon in pairs:
-			# convert to radians
-			lat = lat * (math.pi) / 180 
-			lon = lon * (math.pi) / 180
-
-			# cartesian conversion
-			x = math.cos(lat) * math.cos(lon)
-			y = math.cos(lat) * math.sin(lon)
-			z = math.sin(lat)
-
-			# add to list of coordinates
-			xyz = (x, y, z)
-			cartesian.append(xyz)
-
-			w += 1  # w represents the weight of each location, we will take it to be 1 equally for all
-
-		# these will be the final cartesian coordinates of the midpoint
-		x = 0
-		y = 0
-		z = 0
-
-		#next, compute weighted average of each coordinate
-		for xyz in cartesian:
-			x += xyz[0]
-			y += xyz[1]
-			z += xyz[2]
-
-		x /= w
-		y /= w
-		z /= w
-
-		#lastly, convert back to latitude and longitude
-		lon = math.atan2(y, x)
-		hyp = math.sqrt( (x * x) + (y * y) )
-		lat = math.atan2(z, hyp)
-
-		lat = lat * 180 / math.pi
-		lon = lon * 180 / math.pi
-
-		return (lat, lon)
-    
-
 	def post(self):
 		# https://developers.google.com/appengine/docs/python/tools/webapp/requestclass
 		# pairs = self.request.get('pairs')
-		self.get_recommendation(pairs)
+		self.get_recommendation()
 
 	def get(self):
 		self.response.out.write('''
@@ -283,11 +286,7 @@ class SetAvailable(webapp2.RequestHandler):
 	def set_available(self, phoneNumber, email, firstName, lastName, lat, lon, categories):
 
 		#update user in db to be active
-		entry = db.GqlQuery("SELECT * FROM ActiveUsers WHERE user = :1", phoneNumber).get()
-		if entry:
-			# do nothing 
-		else: 
-			entry = ActiveUsers(user = user, active = True)
+		entry = ActiveUsers(key_name = phoneNumber, user = phoneNumber, active = True)
 		entry.put()
 
 		bucket_name = os.environ.get('BUCKET_NAME', app_identity.get_default_gcs_bucket_name())
@@ -313,11 +312,11 @@ class SetAvailable(webapp2.RequestHandler):
 				gcs_file.write(write_string.encode('utf-8'))
 
 			gcs_file.close()
-			returnVal(self, lambda : json.dump(["UserAvailable", tag, value], self.response.out))
+			returnVal(self, lambda : json.dump(["UserAvailable"], self.response.out))
 		
 		except gcs.NotFoundError:
-			returnVal(self, lambda : json.dump(["UserNotFound", tag, value], self.response.out))
-    
+			returnVal(self, lambda : json.dump(["UserNotFound"], self.response.out))
+
 
 	def post(self):
 		# https://developers.google.com/appengine/docs/python/tools/webapp/requestclass
@@ -476,6 +475,50 @@ class RegisterUser(webapp2.RequestHandler):
 	       <input type="submit" value="Register a User">
 	    </form></body></html>\n''')
 
+class UnregisterUser(webapp2.RequestHandler):
+
+	def unregister_user(self, phoneNumber):
+
+		# first remove them from db
+		query = db.GqlQuery("SELECT * FROM ActiveUsers WHERE user = :1", phoneNumber)
+		if query:
+			db_success = True
+			user = query.fetch(10)
+			db.delete(user)
+		else:
+			db_success = False
+
+		# next remove them from file system
+		bucket_name = os.environ.get('BUCKET_NAME', app_identity.get_default_gcs_bucket_name())
+
+		bucket = '/' + bucket_name
+		filename = bucket + '/' + phoneNumber + '.txt'
+
+		try:
+			gcs.delete(filename)
+			if db_success:
+				returnVal(self, lambda :json.dump(["Success"], self.response.out))
+			else:
+				returnVal(self, lambda : json.dump(["Error - No user with that phone number"], self.response.out))
+
+		except gcs.NotFoundError:
+			returnVal(self, lambda : json.dump(["Error - No user with that phone number"], self.response.out))
+
+	def post(self):
+		phoneNumber = self.request.get('phone')
+		self.unregister_user(phoneNumber)
+
+# this is just for browser test
+	def get(self):
+		self.response.out.write('''
+	    <html><body>
+	    <form action="/unregisteruser" method="post"
+	          enctype=application/x-www-form-urlencoded>
+	       <p>Phone Number<input type="text" name="phone" /></p>
+	       <input type="hidden" name="fmt" value="html">
+	       <input type="submit" value="Unregister a User">
+	    </form></body></html>\n''')
+
 class RefreshGroup(webapp2.RequestHandler):
 
 	def refresh_group(self, phoneNumber):
@@ -525,7 +568,7 @@ class RefreshGroup(webapp2.RequestHandler):
 	          enctype=application/x-www-form-urlencoded>
 	       <p>Phone Number<input type="text" name="phone" /></p>
 	       <input type="hidden" name="fmt" value="html">
-	       <input type="submit" value="Register a User">
+	       <input type="submit" value="Refresh Group">
 	    </form></body></html>\n''')
 
 
@@ -550,7 +593,9 @@ application = webapp2.WSGIApplication([
 	('/setactive', SetActive),
 	('/getvalue', GetValue),
 	('/getrecommendation', GetRecommendation),
+	('/setavailable', SetAvailable),
 	('/registeruser', RegisterUser),
+	('/unregisteruser', UnregisterUser),
 	('/refreshgroup', RefreshGroup)
 	], debug=True)
 

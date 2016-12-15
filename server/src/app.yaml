@@ -1,7 +1,7 @@
 runtime: python27
 #runtime: python
 api_version: 1
-threadsafe: true
+threadsafe: no
 
 handlers:
 - url: /.*
