@@ -12,6 +12,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.TextView;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
@@ -442,12 +443,18 @@ public class MessageFragment extends Fragment {
             restaurantName = (String) recommendReply.get(0);
             restaurantGPS = (Location)recommendReply.get(1);
 
+            //Save restaurant location in local storage
+            sharedPreferences.edit().putString("RestaurantLat", Double.toString(restaurantGPS.getLatitude())).apply();
+            sharedPreferences.edit().putString("RestaurantLong", Double.toString(restaurantGPS.getLongitude())).apply();
+
         }catch(JSONException e){
             System.out.println("Error in JSON decoding");
             e.printStackTrace();
         }
 
         //Display info
+        TextView t = (TextView)getActivity().findViewById(R.id.restaurantName);
+        t.setText(restaurantName);
 
     }
 

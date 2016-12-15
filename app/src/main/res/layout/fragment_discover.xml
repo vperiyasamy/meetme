@@ -33,7 +33,6 @@
         android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true" />
 
-<<<<<<< HEAD
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -47,7 +46,5 @@
         android:textSize="18sp"
         android:id="@+id/restaurantName" />
 
-</FrameLayout>
-=======
+
 </RelativeLayout>
->>>>>>> 334b0558a4a40d4b409df5aede7799d6d2687b2f
