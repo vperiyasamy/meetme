@@ -108,9 +108,18 @@ public class MainActivity extends AppCompatActivity
                 isAvailable = true;
                 Log.i("Available", "I am available");
                 Toast.makeText(getApplicationContext(), "I am available.", Toast.LENGTH_SHORT).show();
+
+
+
+
+
             } else {
                 isAvailable = false;
                 Toast.makeText(getApplicationContext(), "I am not available.", Toast.LENGTH_SHORT).show();
+
+
+
+
             }
 
             return true;

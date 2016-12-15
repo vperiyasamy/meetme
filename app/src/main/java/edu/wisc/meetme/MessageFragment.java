@@ -44,7 +44,7 @@ public class MessageFragment extends Fragment {
     private static final String ARG_PARAM2 = "param2";
 
 
-    SharedPreferences sharedPreferences = getActivity().getSharedPreferences("edu.wisc.meetme", Context.MODE_PRIVATE);
+    SharedPreferences sharedPreferences;
     JSONArray recommendReply;
     User me;
 
@@ -83,7 +83,7 @@ public class MessageFragment extends Fragment {
             mParam1 = getArguments().getString(ARG_PARAM1);
             mParam2 = getArguments().getString(ARG_PARAM2);
         }
-
+        sharedPreferences = getActivity().getSharedPreferences("edu.wisc.meetme", Context.MODE_PRIVATE);
         //Get app-user info and create a User object
 
         // Get the data from local memory
