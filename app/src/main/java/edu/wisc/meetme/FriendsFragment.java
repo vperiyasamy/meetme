@@ -298,8 +298,9 @@ public class FriendsFragment extends Fragment {
         ArrayList<User> sortedList = new ArrayList<User>();
         double udis, qdis;
         boolean uadded;
-        //Location meloc = sharedPreferences.getString("");
-        //me.testsetlocation();
+        double melat = Double.parseDouble(sharedPreferences.getString("Latitude", ""));
+        double melong = Double.parseDouble(sharedPreferences.getString("Longitude", ""));
+        me.setlocation(melat, melong);
         for(User u: users){
             uadded = false;
             if(sortedList.size() == 0){
@@ -309,7 +310,7 @@ public class FriendsFragment extends Fragment {
                 //compare u's distance from user with the distances within sortedList
                 for (User q : sortedList) {
                     Location uloc = u.getLocation();
-                    Location meloc = me.getLocation(); ///Replace later with reference to main user/////////////
+                    Location meloc = me.getLocation();
                     Location qloc = q.getLocation();
                     //Once gps is properly coded, will have to change how distance is calculated///
                     udis = getDistanceFromLatLonInKm(uloc.getLatitude(), uloc.getLongitude(),

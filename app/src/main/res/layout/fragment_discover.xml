@@ -25,4 +25,17 @@
         android:id="@+id/recommendButton"
         android:onClick="getRecommendation"/>
 
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Recommended: "
+        android:textSize="18sp"
+        android:id="@+id/recommendTitle" />
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text=""
+        android:textSize="18sp"
+        android:id="@+id/restaurantName" />
+
 </FrameLayout>

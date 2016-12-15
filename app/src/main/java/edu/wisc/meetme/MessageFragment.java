@@ -28,6 +28,8 @@ import org.json.JSONException;
 import java.io.IOException;
 import java.util.ArrayList;
 
+import static java.util.Arrays.asList;
+
 
 /**
  * A simple {@link Fragment} subclass.
@@ -47,6 +49,90 @@ public class MessageFragment extends Fragment {
     SharedPreferences sharedPreferences = getActivity().getSharedPreferences("edu.wisc.meetme", Context.MODE_PRIVATE);
     JSONArray recommendReply;
     User me;
+
+    final ArrayList<String> foodOption = new ArrayList<String>(asList(
+            "Afghan",
+            "African",
+            "Ethiopian",
+            "American",
+            "Asian",
+            "Burmese",
+            "Cambodian",
+            "Chinese",
+            "Cantoness",
+            "Dim Sum",
+            "Fujian",
+            "Hunan",
+            "Peking Duck",
+            "Shanghai",
+            "Szechuan",
+            "Taiwanese",
+            "Filipino",
+            "Himalayan",
+            "Hotpot",
+            "Indonesian",
+            "Japanese",
+            "Ramen",
+            "Soba",
+            "Sushi",
+            "Udon",
+            "Korean",
+            "Malay",
+            "Mongolian",
+            "Noodle House",
+            "Thai",
+            "Tibetan",
+            "Vietnamese",
+            "Australian",
+            "BBQ",
+            "Bakery",
+            "Breakfast",
+            "Bubble Tea",
+            "Buffet",
+            "Burgers",
+            "Cajun/Creole",
+            "Caribbean",
+            "Coffee",
+            "Creperie",
+            "Desserts",
+            "Frozen Yogurt",
+            "Ice Cream",
+            "Diner",
+            "Donuts",
+            "English",
+            "Falafel",
+            "Fast Food",
+            "Food Truck",
+            "French",
+            "Fried Chicken",
+            "German",
+            "Greek",
+            "Hot Dogs",
+            "Indian",
+            "North Indian",
+            "South Indian",
+            "Irish",
+            "Italian",
+            "Latin American",
+            "Mac & Cheese",
+            "Mediterranean",
+            "Mexican",
+            "Burritos",
+            "Tacos",
+            "Tex-Mex",
+            "Middle Eastern",
+            "Pizza",
+            "Portuguese",
+            "Poutine",
+            "Sandwiches",
+            "Seafood",
+            "Southern/Soul",
+            "Spanish",
+            "Sri Lankan",
+            "Steakhouse",
+            "Vegetarian/Vegan",
+            "Wings"
+    ));
 
     // TODO: Rename and change types of parameters
     private String mParam1;
@@ -128,9 +214,10 @@ public class MessageFragment extends Fragment {
                                                    // 6. Longitude
                                                    // 7. 17 strings (preferences package), revise later
                                                    //   7.1 1st 16 strings have 5, 17th only 1:
-                                                   // "503288ae91d4c4b30a586d67,0;503288ae91d4c4b30a586d67,1;503288ae91d4c4b30a586d67,-1;503288ae91d4c4b30a586d67,0;503288ae91d4c4b30a586d67,1;"
+                                                   // "503288ae91d4c4b30a586d67,0;503288ae91d4c4b30a586d67,1;503288ae91d4c4b30a586d67,-1;503288ae91d4c4b30a586d67,0;503288ae91d4c4b30a586d67,1"
                                                    //   a. Category IDs, then a comma
                                                    //   b. like(1), dislike(-1) or no preference(0) (int), then semicolon
+                                                   //       - no semicolon at end of big string
 
 
                                                    // 1. Phone number
@@ -146,8 +233,10 @@ public class MessageFragment extends Fragment {
                                                    aStr[3] = me.getLast();
 
                                                    // 5. Latitude
+                                                   aStr[4] = sharedPreferences.getString("Latitude", "");
 
                                                    // 6. Longitude
+                                                   aStr[5] = sharedPreferences.getString("Longitude", "");
 
                                                    // 7. Preferences
 
@@ -156,9 +245,9 @@ public class MessageFragment extends Fragment {
                                                    if (!aStr[0].isEmpty())
                                                    {
                                                        //Execute register request
-                                                       httpRecommend hR = new httpRecommend();
+                                                       httpActive hR = new httpActive();
                                                        hR.execute(aStr);
-                                                       getRecommendation(v);
+                                                       setAvailable(v);
                                                    }
                                                }
                                            }
@@ -166,8 +255,41 @@ public class MessageFragment extends Fragment {
     }
 
     public ArrayList<String> getPrefs(){
+        ArrayList<String> prefs = null;
+        ArrayList<String> toReturn = new ArrayList<String>();
+        try {
 
+            prefs = (ArrayList<String>) ObjectSerializer.deserialize(sharedPreferences.getString("FoodPreference", ObjectSerializer.serialize(new ArrayList<String>())));
 
+        } catch (IOException e) {
+
+            e.printStackTrace();
+
+        }
+        for(int i = 0; i < foodOption.size(); i+= 5){
+            String line = "";
+            for(int j = 0; j < 5; j++){
+                String id;
+                String value;
+
+                //get category id from hash table
+
+                //Check if the food is in prefs, assign 1 if it is, 0 if not
+                if(prefs.indexOf(foodOption.get(i+j)) != -1){
+                    value = "1";
+                }
+                else{
+                    value = "0";
+                }
+
+                //add string to line
+                line = line + id + "," + value + ";";
+            }
+            //remove semicolon at end
+            line = line.substring(0, line.length() - 1);
+        }
+
+        return toReturn;
     }
 
 
@@ -230,6 +352,57 @@ public class MessageFragment extends Fragment {
         }
     }
 
+    protected class httpActive extends AsyncTask<String, Void, String> {
+        @Override
+        protected String doInBackground(String... strs) {
+            String reply = null;
+            String temp = ""; //capture acknowledgement from server, if any
+
+            //Construct an HTTP POST
+            HttpClient httpclient = new DefaultHttpClient();
+            HttpPost setActive = new HttpPost("http://meetmeece454.appspot.com/getrecommendation");
+
+            // Values to be sent from android app to server
+            ArrayList<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>();
+
+            // "tag" is the name of the text form on the webserver
+            // "value" is the value that the client is submitting to the server
+            // These two are specified by the server. The cilent side program must respect.
+            nameValuePairs.add(new BasicNameValuePair("phone", strs[0]));
+
+            try {
+                UrlEncodedFormEntity httpEntity = new UrlEncodedFormEntity(nameValuePairs);
+                setActive.setEntity(httpEntity);
+
+                //Execute HTTP POST
+                HttpResponse response = httpclient.execute(setActive);
+                //Capture acknowledgement from server
+                // In this demo app, the server returns "Update" if the tag already exists;
+                // Otherwise, the server returns "New"
+                temp = EntityUtils.toString(response.getEntity());
+            } catch (ClientProtocolException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                System.out.println("HTTP IO Exception.");
+                e.printStackTrace();
+            }
+
+
+            // Decompose the server's acknowledgement into a JSON array
+            try {
+                JSONArray jsonArray = new JSONArray(temp);
+                reply = "user is now active";
+                //reply = jsonArray.getString(0);
+
+            } catch (JSONException e) {
+                System.out.println("Error in JSON decoding");
+                e.printStackTrace();
+            }
+
+            return reply;
+        }
+    }
+
 
     // TODO: Rename method, update argument and hook method into UI event
     public void onButtonPressed(Uri uri) {
@@ -274,7 +447,7 @@ public class MessageFragment extends Fragment {
             e.printStackTrace();
         }
 
-        //Display info in popup
+        //Display info
 
     }
 
@@ -289,8 +462,7 @@ public class MessageFragment extends Fragment {
     // 7. 17 strings (preferences package), revise later
     public void setAvailable(View v){
         //Access app user's online status and set as active
-
-        //Send query to server to update user info with online status
+        me.setOnline(true);
 
         //Activate fragment to update preferences
 

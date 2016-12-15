@@ -55,8 +55,9 @@ public class User {
     }
 
     //How we'll set location until gps location gathering is set up.
-    public void testsetlocation(Location gps){
-        location = gps;
+    public void setlocation(double lat, double lon){
+        location.setLatitude(lat);
+        location.setLongitude(lon);
     }
 
 
