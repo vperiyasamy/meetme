@@ -44,9 +44,6 @@ public class ProfileFragment extends Fragment {
 
 
 
-
-
-
     public ProfileFragment() {
         // Required empty public constructor
     }
@@ -184,7 +181,7 @@ public class ProfileFragment extends Fragment {
 //        ArrayList<String> myFood = new ArrayList<String>();
         ArrayAdapter<String> listViewAdapater = new ArrayAdapter<String>(
                 getActivity(),
-                android.R.layout.simple_list_item_single_choice,
+                android.R.layout.simple_list_item_checked,
                 foodOption
         );
         myListView.setAdapter(listViewAdapater);
@@ -214,7 +211,6 @@ public class ProfileFragment extends Fragment {
                     e.printStackTrace();
 
                 }
-
             }
         });
 
@@ -236,11 +232,7 @@ public class ProfileFragment extends Fragment {
         for (String value : loadFood) {
             myListView.setItemChecked(foodOption.indexOf(value), true);
         }
-
         Log.i("LoadFood", loadFood.toString());
-
-
-
 
         return view;
     }

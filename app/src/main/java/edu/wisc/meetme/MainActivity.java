@@ -1,12 +1,14 @@
 package edu.wisc.meetme;
 
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.app.Fragment;
 import android.app.FragmentManager;
+import android.util.Log;
 import android.view.View;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -16,7 +18,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
-
+import android.widget.Toast;
 
 
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -35,6 +37,7 @@ public class MainActivity extends AppCompatActivity
         FriendsFragment.OnFragmentInteractionListener,
         ProfileFragment.OnFragmentInteractionListener {
 
+    boolean isAvailable;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -101,16 +104,19 @@ public class MainActivity extends AppCompatActivity
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.utility) {
-
-
-
-
+            if (isAvailable == false) {
+                isAvailable = true;
+                Log.i("Available", "I am available");
+                Toast.makeText(getApplicationContext(), "I am available.", Toast.LENGTH_SHORT).show();
+            } else {
+                isAvailable = false;
+                Toast.makeText(getApplicationContext(), "I am not available.", Toast.LENGTH_SHORT).show();
+            }
 
             return true;
         } else {
             return false;
         }
-
     }
 
 

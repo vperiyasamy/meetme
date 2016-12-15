@@ -66,25 +66,6 @@ import java.io.InputStreamReader;
 
 public class HomeActivity extends Activity implements LocationListener {
 
-//    LocationManager locationManager;
-//    String provider;
-//    /**
-//     * ATTENTION: This was auto-generated to implement the App Indexing API.
-//     * See https://g.co/AppIndexing/AndroidStudio for more information.
-//     */
-//    private GoogleApiClient client = new GoogleApiClient.Builder(this).build();
-
-
-    public void goToProfile(View view) {
-        Intent i = new Intent(HomeActivity.this, ProfileActivity.class);
-        startActivity(i);
-
-    }
-
-    //public void goToMap(View view) {
-    //    Intent i = new Intent(HomeActivity.this, MapsActivity.class);
-    //    startActivity(i);
-    //}
 
     ArrayList<User> testFriends;
     ArrayList<String> onlineNames;
