@@ -1,4 +1,4 @@
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -12,19 +12,28 @@
         android:textSize="30sp"
         android:textStyle="normal|bold"
         android:textAlignment="center" />
+
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Set me as Available!"
         android:id="@+id/availableButton"
-        android:onClick="setAvailable"/>
+        android:onClick="setAvailable"
+        android:layout_marginBottom="155dp"
+        android:layout_above="@+id/recommendButton"
+        android:layout_centerHorizontal="true" />
+
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Get a Recommendation!"
         android:id="@+id/recommendButton"
-        android:onClick="getRecommendation"/>
+        android:onClick="getRecommendation"
+        android:layout_marginBottom="107dp"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true" />
 
+<<<<<<< HEAD
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -39,3 +48,6 @@
         android:id="@+id/restaurantName" />
 
 </FrameLayout>
+=======
+</RelativeLayout>
+>>>>>>> 334b0558a4a40d4b409df5aede7799d6d2687b2f
