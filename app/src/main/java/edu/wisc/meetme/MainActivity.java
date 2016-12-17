@@ -1,8 +1,12 @@
 package edu.wisc.meetme;
 
+import android.app.DialogFragment;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -29,6 +33,20 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 import java.util.Hashtable;
+import org.apache.http.HttpResponse;
+import org.apache.http.NameValuePair;
+import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.message.BasicNameValuePair;
+import org.apache.http.util.EntityUtils;
+import org.json.JSONArray;
+import org.json.JSONException;
+
+import java.io.IOException;
+import java.util.ArrayList;
 
 import static edu.wisc.meetme.R.layout.activity_main;
 
@@ -40,6 +58,7 @@ public class MainActivity extends AppCompatActivity
         ProfileFragment.OnFragmentInteractionListener {
 
     boolean isAvailable;
+    SharedPreferences sharedPreferences = getSharedPreferences("edu.wisc.meetme", Context.MODE_PRIVATE);
 
     // user friendly string names of each category
     private final String[] categories = {
@@ -287,11 +306,54 @@ public class MainActivity extends AppCompatActivity
             if (isAvailable == false) {
                 isAvailable = true;
                 Log.i("Available", "I am available");
-                Toast.makeText(getApplicationContext(), "I am available.", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getApplicationContext(), "I am available.", Toast.LENGTH_SHORT).show();                                                 //Store
+
+                //String array sent with info
+                String[ ] aStr = new String[6] ;
+
+                //Should send:
+                // 1. Phone number
+                // 2. Email
+                // 3. First name
+                // 4. Last name
+                // 5. Latitude
+                // 6. Longitude
+                // 7. 1 long string
+                // "503288ae91d4c4b30a586d67,0;503288ae91d4c4b30a586d67,1;503288ae91d4c4b30a586d67,-1;503288ae91d4c4b30a586d67,0;503288ae91d4c4b30a586d67,1"
+                //   a. Category IDs, then a comma
+                //   b. like(1), dislike(-1) or no preference(0) (int), then semicolon
+                //       - no semicolon at end of big string
 
 
+                // 1. Phone number
+                aStr[0] = sharedPreferences.getString("Phone", "");
 
+                // 2. Email
+                aStr[1] = sharedPreferences.getString("Email", "");
 
+                // 3. First name
+                aStr[2] = sharedPreferences.getString("FirstName", "");
+
+                // 4. Last name
+                aStr[3] = sharedPreferences.getString("LastName", "");
+
+                // 5. Latitude
+                aStr[4] = sharedPreferences.getString("Latitude", "");
+
+                // 6. Longitude
+                aStr[5] = sharedPreferences.getString("Longitude", "");
+
+                // 7. Preferences
+                String prefs = getPrefs();
+                aStr[6] = prefs;
+
+                if (!aStr[0].isEmpty())
+                {
+                    //Execute register request
+                    httpActive hR = new httpActive();
+                    hR.execute(aStr);
+                    setAvailable(getCurrentFocus());
+                }
 
             } else {
                 isAvailable = false;
@@ -305,6 +367,77 @@ public class MainActivity extends AppCompatActivity
             return true;
         } else {
             return false;
+        }
+    }
+
+    //Button to set self as available. Query server to update user availability
+    //Should send:
+    // 1. Phone number
+    // 2. Email
+    // 3. First name
+    // 4. Last name
+    // 5. Latitude
+    // 6. Longitude
+    // 7. 17 strings (preferences package), revise later
+    public void setAvailable(View v){
+        //Access app user's online status and set as active
+        FriendsFragment.me.setOnline(true);
+
+        //Activate fragment to update preferences
+        DialogFragment updateDialog = new updatePrefsDialogFragment();
+        updateDialog.show(getFragmentManager(),"updatePrefs");
+
+    }
+
+    //Asynchronous task that sends server request to set user as available.
+    protected class httpActive extends AsyncTask<String, Void, String> {
+        @Override
+        protected String doInBackground(String... strs) {
+            String reply = null;
+            String temp = ""; //capture acknowledgement from server, if any
+
+            //Construct an HTTP POST
+            HttpClient httpclient = new DefaultHttpClient();
+            HttpPost setActive = new HttpPost("http://meetmeece454.appspot.com/getrecommendation");
+
+            // Values to be sent from android app to server
+            ArrayList<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>();
+
+            // "tag" is the name of the text form on the webserver
+            // "value" is the value that the client is submitting to the server
+            // These two are specified by the server. The cilent side program must respect.
+            nameValuePairs.add(new BasicNameValuePair("phone", strs[0]));
+
+            try {
+                UrlEncodedFormEntity httpEntity = new UrlEncodedFormEntity(nameValuePairs);
+                setActive.setEntity(httpEntity);
+
+                //Execute HTTP POST
+                HttpResponse response = httpclient.execute(setActive);
+                //Capture acknowledgement from server
+                // In this demo app, the server returns "Update" if the tag already exists;
+                // Otherwise, the server returns "New"
+                temp = EntityUtils.toString(response.getEntity());
+            } catch (ClientProtocolException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                System.out.println("HTTP IO Exception.");
+                e.printStackTrace();
+            }
+
+
+            // Decompose the server's acknowledgement into a JSON array
+            try {
+                JSONArray jsonArray = new JSONArray(temp);
+                reply = "user is now active";
+                //reply = jsonArray.getString(0);
+
+            } catch (JSONException e) {
+                System.out.println("Error in JSON decoding");
+                e.printStackTrace();
+            }
+
+            return reply;
         }
     }
 

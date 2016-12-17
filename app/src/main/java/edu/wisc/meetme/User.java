@@ -15,7 +15,7 @@ public class User {
     private String[] name;
     private boolean online; //boolean that denotes whether user is online
     private int prefs[]; //Array with user preferences. Will likely be laid out in specific order
-    private Location location; //not sure what data structure location is kept as, so int for now
+    private Location location; //last stored location of the user
 
     //Constructor
     public User(String id, String first, String last, boolean active){

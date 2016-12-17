@@ -56,7 +56,7 @@ public class FriendsFragment extends Fragment {
     ArrayList<User> offline = new ArrayList<User>();
     ArrayAdapter<String> onlineAdapter, offlineAdapter;
     JSONArray refreshReply;
-    User me;
+    public static User me;
     boolean startup;
 
     // TODO: Rename and change types of parameters
@@ -196,32 +196,43 @@ public class FriendsFragment extends Fragment {
         // 2. First Name,
         // 3. Last Name,
         // 4. Active/Inactive Status (boolean)
+        //   IF ACTIVE: has two more entries
+        //       a. Latitude
+        //       b. Longitude
 
         //If refreshing on startup, create all new user objects
         if(startup){
-            for (int i = 0; i < serverList.length(); i += 4) {
+            for (int i = 0; i < serverList.length();) {
+                int datalength = 0;
                 try {
                     String id = (String)serverList.get(i);
                     String[] name = {serverList.getString(i + 1), serverList.getString(i + 2)};
                     boolean active = serverList.get(i + 3).equals("true");
                     User curr = new User(id, name[0], name[1], active);
-                    allFriends.add(curr);
                     if(active){
+                        double lat = Double.parseDouble(serverList.getString(i + 4));
+                        double lon = Double.parseDouble(serverList.getString(i + 5));
+                        curr.setlocation(lat, lon);
                         online.add(curr);
+                        datalength = 6;
                     }
                     else{
                         offline.add(curr);
+                        datalength = 4;
                     }
+                    allFriends.add(curr);
                 } catch (JSONException e) {
                     System.out.println("Error in JSON decoding");
                     e.printStackTrace();
                 }
+                i+= datalength;
             }
             startup = false;
         }
         //Otherwise, check whether user is already created, and if so, edit online status.
         else{
-            for(int i = 0; i < serverList.length(); i+= 4){
+            for(int i = 0; i < serverList.length();){
+                int datalength = 0;
                 try {
                     int currindex = 0;
                     String id = (String) serverList.get(i);
@@ -237,13 +248,18 @@ public class FriendsFragment extends Fragment {
                     //If the user isn't already created, add them to the correct lists
                     if(!usercreated){
                         User curr = new User(id, name[0], name[1], active);
-                        allFriends.add(curr);
                         if(active){
+                            double lat = Double.parseDouble(serverList.getString(i + 4));
+                            double lon = Double.parseDouble(serverList.getString(i + 5));
+                            curr.setlocation(lat, lon);
                             online.add(curr);
+                            datalength = 6;
                         }
                         else{
                             offline.add(curr);
+                            datalength = 4;
                         }
+                        allFriends.add(curr);
                     }
                     //If the user is created, edit their online status if needed and move to correct list
                     else{
@@ -258,6 +274,7 @@ public class FriendsFragment extends Fragment {
                                         online.remove(user);
                                         offline.add(user);
                                         user.setOnline(active);
+                                        datalength = 4;
                                     }
                                 }
                             }
@@ -268,8 +285,23 @@ public class FriendsFragment extends Fragment {
                                         offline.remove(user);
                                         online.add(user);
                                         user.setOnline(active);
+                                        double lat = Double.parseDouble(serverList.getString(i + 4));
+                                        double lon = Double.parseDouble(serverList.getString(i + 5));
+                                        user.setlocation(lat, lon);
+                                        datalength = 6;
                                     }
                                 }
+                            }
+                        }
+                        else{
+                            if(active){
+                                double lat = Double.parseDouble(serverList.getString(i + 4));
+                                double lon = Double.parseDouble(serverList.getString(i + 5));
+                                curr.setlocation(lat, lon);
+                                datalength = 6;
+                            }
+                            else{
+                                datalength = 4;
                             }
                         }
                     }
@@ -278,6 +310,7 @@ public class FriendsFragment extends Fragment {
                     System.out.println("Error in JSON decoding");
                     e.printStackTrace();
                 }
+                i+= datalength;
             }
         }
 
@@ -364,7 +397,7 @@ public class FriendsFragment extends Fragment {
     }
 
 
-    //Needs work. Will look at alphabetic sorts later.
+    //Sorts friends alphabetically by first name
     private ArrayList<User> alphaSort(ArrayList<User> users){
         ArrayList<User> sortedList = new ArrayList<User>();
         ArrayList<String> names = new ArrayList<String>();
@@ -375,12 +408,12 @@ public class FriendsFragment extends Fragment {
                 sortedList.add(u);
             }
             else {
-                //compare first letter of u's name with first letter of users in sortedList
+                //compare first name of u with first name of users in sortedList
                 for (User q : sortedList) {
-                    names.add(u.getName());
-                    names.add(q.getName());
+                    names.add(u.getFirst());
+                    names.add(q.getFirst());
                     Collections.sort(names);
-                    if(names.get(0).equals(u.getName())){
+                    if(names.get(0).equals(u.getFirst())){
                         sortedList.add(sortedList.indexOf(q),u);
                         uadded = true;
                         break;
