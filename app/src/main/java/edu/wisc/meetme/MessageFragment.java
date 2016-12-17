@@ -240,8 +240,8 @@ public class MessageFragment extends Fragment {
                                                    aStr[5] = sharedPreferences.getString("Longitude", "");
 
                                                    // 7. Preferences
-
-
+                                                   String [] prefs = getPrefs();
+                                                   System.arraycopy(prefs,0,aStr,6,17);
 
                                                    if (!aStr[0].isEmpty())
                                                    {
@@ -255,9 +255,9 @@ public class MessageFragment extends Fragment {
         );
     }
 
-    public ArrayList<String> getPrefs(){
+    public String[] getPrefs(){
         ArrayList<String> prefs = null;
-        ArrayList<String> toReturn = new ArrayList<String>();
+        String[] toReturn = new String[17];
         try {
 
             prefs = (ArrayList<String>) ObjectSerializer.deserialize(sharedPreferences.getString("FoodPreference", ObjectSerializer.serialize(new ArrayList<String>())));
@@ -269,11 +269,11 @@ public class MessageFragment extends Fragment {
         }
         for(int i = 0; i < foodOption.size(); i+= 5){
             String line = "";
-            for(int j = 0; j < 5; j++){
-                String id;
+            for(int j = 0; j < 5 && i+j < foodOption.size(); j++){
+                String id = "";
                 String value;
 
-                //get category id from hash table
+                //get category id from hash table///////////DO WHEN HASH TABLE IS DONE////////
 
                 //Check if the food is in prefs, assign 1 if it is, 0 if not
                 if(prefs.indexOf(foodOption.get(i+j)) != -1){
@@ -286,7 +286,7 @@ public class MessageFragment extends Fragment {
                 //add string to line
                 line = line + id + "," + value + ";";
             }
-            //remove semicolon at end
+            //remove semicolon at end of long string
             line = line.substring(0, line.length() - 1);
         }
 
