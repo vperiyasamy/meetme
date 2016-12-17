@@ -20,11 +20,31 @@
         android:text="Refresh"
         android:id="@+id/refreshButton"/>
     <TextView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:text="Online"
+        android:textSize="25sp"
+        android:textStyle="normal|bold"
+        android:textAlignment="center" />
+    <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="You currently have no friends :("
+        android:text="You currently have no friends online :("
         android:textSize="18sp"
         android:id="@+id/friendsActive" />
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:text="Offline"
+        android:textSize="25sp"
+        android:textStyle="normal|bold"
+        android:textAlignment="center" />
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="There are no friends here"
+        android:textSize="18sp"
+        android:id="@+id/friendsOffline" />
 
 
 </FrameLayout>

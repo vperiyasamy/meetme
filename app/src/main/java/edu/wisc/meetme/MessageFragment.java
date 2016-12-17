@@ -179,7 +179,7 @@ public class MessageFragment extends Fragment {
         sharedPreferences = getActivity().getSharedPreferences("edu.wisc.meetme", Context.MODE_PRIVATE);
         //Get app-user info and create a User object
 
-        // Get the data from local memory
+        // Get the data from local memory to create user object for app-user
         String first = sharedPreferences.getString("FirstName", ""); // "" menas default value
         String last = sharedPreferences.getString("LastName", "");
         String id = sharedPreferences.getString("Phone", "");
@@ -259,7 +259,11 @@ public class MessageFragment extends Fragment {
                                            }
         );
     }
-
+    // Preferences should be formatted as 1 long string and as follows:
+    // "503288ae91d4c4b30a586d67,0;503288ae91d4c4b30a586d67,1;503288ae91d4c4b30a586d67,-1;503288ae91d4c4b30a586d67,0;503288ae91d4c4b30a586d67,1"
+    //   a. Category ID, then a comma
+    //   b. like(1), dislike(-1) or no preference(0) (int), then semicolon
+    //       - no semicolon at end of big string
     public String getPrefs(){
         ArrayList<String> prefs = null;
         String toReturn = "";
@@ -272,7 +276,6 @@ public class MessageFragment extends Fragment {
             e.printStackTrace();
 
         }
-        String line = "";
         for(int i = 0; i < foodOption.size(); i++){
                 String id = "";
                 String value;
@@ -288,11 +291,11 @@ public class MessageFragment extends Fragment {
                 }
 
                 //add string to line
-                line = line + id + "," + value + ";";
+                toReturn = toReturn + id + "," + value + ";";
             //remove semicolon at end of long string
 
         }
-        line = line.substring(0, line.length() - 1);
+        toReturn = toReturn.substring(0, toReturn.length() - 1);
         return toReturn;
     }
 

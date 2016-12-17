@@ -50,10 +50,11 @@ public class FriendsFragment extends Fragment {
     private static final String ARG_PARAM1 = "param1";
     private static final String ARG_PARAM2 = "param2";
     ArrayList<String> onlineNames;
+    ArrayList<String> offlineNames;
     ArrayList<User> allFriends = new ArrayList<User>();
     ArrayList<User> online = new ArrayList<User>();
     ArrayList<User> offline = new ArrayList<User>();
-    ArrayAdapter<String> onlineAdapter;
+    ArrayAdapter<String> onlineAdapter, offlineAdapter;
     JSONArray refreshReply;
     User me;
     boolean startup;
@@ -96,6 +97,7 @@ public class FriendsFragment extends Fragment {
 
         startup = true;
         onlineAdapter = new ArrayAdapter<String>(getActivity(), android.R.layout.simple_list_item_1, R.id.friendsActive, onlineNames);
+        offlineAdapter = new ArrayAdapter<String>(getActivity(), android.R.layout.simple_list_item_1, R.id.friendsOffline, offlineNames);
 
         //Get app-user info and create a User object
 
@@ -279,7 +281,8 @@ public class FriendsFragment extends Fragment {
             }
         }
 
-        online = gpsSort(online);
+
+        online = alphaSort(online);
         offline = alphaSort(offline);
         updateNames();
 
@@ -291,9 +294,17 @@ public class FriendsFragment extends Fragment {
         for(User u: online){
             onlineNames.add(u.getName());
         }
+        onlineAdapter.notifyDataSetChanged();
+
+        offlineNames.clear();
+        for(User u: offline){
+            offlineNames.add(u.getName());
+        }
+        offlineAdapter.notifyDataSetChanged();
     }
 
     //Sorts the given list based on distance from app-user
+    //Not implemented right now because other users' locations not stored over server.
     private ArrayList<User> gpsSort(ArrayList<User> users){
         ArrayList<User> sortedList = new ArrayList<User>();
         double udis, qdis;
