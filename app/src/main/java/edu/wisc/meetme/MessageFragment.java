@@ -1,6 +1,12 @@
 package edu.wisc.meetme;
 
+import android.app.AlertDialog;
+import android.app.Dialog;
+import android.app.DialogFragment;
+import android.app.FragmentManager;
+import android.app.FragmentTransaction;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.location.Location;
 import android.net.Uri;
@@ -204,7 +210,7 @@ public class MessageFragment extends Fragment {
         availableButton.setOnClickListener(new View.OnClickListener() {
                                                public void onClick(View v) {
                                                    //String array sent with info
-                                                   String[ ] aStr = new String[23] ;
+                                                   String[ ] aStr = new String[6] ;
 
                                                    //Should send:
                                                    // 1. Phone number
@@ -213,8 +219,7 @@ public class MessageFragment extends Fragment {
                                                    // 4. Last name
                                                    // 5. Latitude
                                                    // 6. Longitude
-                                                   // 7. 17 strings (preferences package), revise later
-                                                   //   7.1 1st 16 strings have 5, 17th only 1:
+                                                   // 7. 1 long string
                                                    // "503288ae91d4c4b30a586d67,0;503288ae91d4c4b30a586d67,1;503288ae91d4c4b30a586d67,-1;503288ae91d4c4b30a586d67,0;503288ae91d4c4b30a586d67,1"
                                                    //   a. Category IDs, then a comma
                                                    //   b. like(1), dislike(-1) or no preference(0) (int), then semicolon
@@ -240,8 +245,8 @@ public class MessageFragment extends Fragment {
                                                    aStr[5] = sharedPreferences.getString("Longitude", "");
 
                                                    // 7. Preferences
-                                                   String [] prefs = getPrefs();
-                                                   System.arraycopy(prefs,0,aStr,6,17);
+                                                   String prefs = getPrefs();
+                                                   aStr[6] = prefs;
 
                                                    if (!aStr[0].isEmpty())
                                                    {
@@ -255,9 +260,9 @@ public class MessageFragment extends Fragment {
         );
     }
 
-    public String[] getPrefs(){
+    public String getPrefs(){
         ArrayList<String> prefs = null;
-        String[] toReturn = new String[17];
+        String toReturn = "";
         try {
 
             prefs = (ArrayList<String>) ObjectSerializer.deserialize(sharedPreferences.getString("FoodPreference", ObjectSerializer.serialize(new ArrayList<String>())));
@@ -267,16 +272,15 @@ public class MessageFragment extends Fragment {
             e.printStackTrace();
 
         }
-        for(int i = 0; i < foodOption.size(); i+= 5){
-            String line = "";
-            for(int j = 0; j < 5 && i+j < foodOption.size(); j++){
+        String line = "";
+        for(int i = 0; i < foodOption.size(); i++){
                 String id = "";
                 String value;
 
                 //get category id from hash table///////////DO WHEN HASH TABLE IS DONE////////
 
                 //Check if the food is in prefs, assign 1 if it is, 0 if not
-                if(prefs.indexOf(foodOption.get(i+j)) != -1){
+                if(prefs.indexOf(foodOption.get(i)) != -1){
                     value = "1";
                 }
                 else{
@@ -285,11 +289,10 @@ public class MessageFragment extends Fragment {
 
                 //add string to line
                 line = line + id + "," + value + ";";
-            }
             //remove semicolon at end of long string
-            line = line.substring(0, line.length() - 1);
-        }
 
+        }
+        line = line.substring(0, line.length() - 1);
         return toReturn;
     }
 
@@ -472,6 +475,8 @@ public class MessageFragment extends Fragment {
         me.setOnline(true);
 
         //Activate fragment to update preferences
+        DialogFragment updateDialog = new updatePrefsDialogFragment();
+        updateDialog.show(getFragmentManager(),"updatePrefs");
 
     }
 
