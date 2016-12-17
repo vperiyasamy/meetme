@@ -20,8 +20,6 @@ MAIN_PAGE_HTML = """\
   <body>
     <a href="setactive">SetActive </a>
     </br>
-    <a href="getvalue">QueryValue </a>
-    </br>
     <a href="getrecommendation">GetRecommendation </a>
     </br>
     <a href="setavailable">SetAvailable </a>
@@ -39,17 +37,9 @@ class ActiveUsers(db.Model):
 	user = db.StringProperty()
 	active = db.BooleanProperty()
 
-
-#class StoredData(db.Model):
-#	tag = db.StringProperty()
-#	value = db.StringProperty(multiline=True)
-	## defining value as a string property limits individual values to 500
-	## characters.   To remove this limit, define value to be a text
-	## property instead, by commnenting out the previous line
-	## and replacing it by this one:
-	## value db.TextProperty()
-	# this line may not be necessary
-#	date = db.DateTimeProperty(required=True, auto_now=True)
+class PreviousRecs(db.Model):
+	place = db.StringProperty()
+	visited = db.BooleanProperty()
 
 
 
@@ -82,39 +72,6 @@ class SetActive(webapp2.RequestHandler):
 	       <p>Value<input type="text" name="value" /></p>
 	       <input type="hidden" name="fmt" value="html">
 	       <input type="submit" value="Set User Active">
-	    </form></body></html>\n''')
-
-class GetValue(webapp2.RequestHandler):
-
-	def get_value(self, tag):
-		entry = db.GqlQuery("SELECT * FROM StoredData where tag = :1", tag).get()
-		if entry:
-			value = entry.value
-		else: value = ""
-	    # Python supports the creation of anonymous functions (i.e. functions that are 
-	    # not bound to a name) at runtime, using a construct called "lambda". 
-	    # http://www.secnetix.de/olli/Python/lambda_functions.hawk
-	    # json for python:  http://docs.python.org/2/library/json.html
-		returnVal(self, lambda : json.dump(["VALUE", tag, value], self.response.out))
-    
-	    ## The above call to returnVal is equivalent to:
-	    #self.response.headers['Content-Type'] = 'application/jsonrequest'
-	    #json.dump(["VALUE", tag, value], self.response.out)
-    
-
-	def post(self):
-		# https://developers.google.com/appengine/docs/python/tools/webapp/requestclass
-		tag = self.request.get('tag')
-		self.get_value(tag)
-
-	def get(self):
-		self.response.out.write('''
-	    <html><body>
-	    <form action="/getvalue" method="post"
-	          enctype=application/x-www-form-urlencoded>
-	       <p>Tag<input type="text" name="tag" /></p>
-	       <input type="hidden" name="fmt" value="html">
-	       <input type="submit" value="Get value">
 	    </form></body></html>\n''')
    
 
@@ -253,9 +210,68 @@ class GetRecommendation(webapp2.RequestHandler):
 			result = urlfetch.fetch( url=url, method=urlfetch.GET, headers = {"Content-Type": "application/json"})
 			
 			data = json.loads(result.content)
-			name = data['response']['venues'][0]['name']
-			lat = data['response']['venues'][0]['location']['lat']
-			lon = data['response']['venues'][0]['location']['lng']
+
+			# initializing loop variables to go through json dump
+			# looking for a restaurant not recently visited
+			found = False
+			atleast_one = False
+			visited = False
+			name = '' # name of place to return to application
+			lat = '' # latitude of place
+			lon = '' # longitude of place
+			i = 0 # loop variable
+
+			try:
+				while !found:
+					entry = db.GqlQuery("SELECT * FROM PreviousRecs where place = :1", data['response']['venues'][i]['name']).get()
+					# already have restaurant in db
+					if entry:
+						atleast_one = True # we know we've found atleast one place for users
+						if entry.visited:
+							# since recently visited, don't select this
+							visited = False # clear bool for next time it pops up
+							name = data['response']['venues'][i]['name']
+						else :
+							# since not recently visited, select this
+							found = True # exit loop now 
+							visited = True # mark recently visited
+							name = data['response']['venues'][i]['name']
+							lat = data['response']['venues'][i]['location']['lat']
+							lon = data['response']['venues'][i]['location']['lng']
+					else:
+						# this is a new place! select this
+						found = True # exit loop now
+						visited = True # mark recently visited
+						name = data['response']['venues'][i]['name']
+						lat = data['response']['venues'][i]['location']['lat']
+						lon = data['response']['venues'][i]['location']['lng']
+
+					# add (or update) place to db
+					db_entry = PreviousRecs(key_name = name, place = name, visited = visited)	
+					db_entry.put()		
+					i++ # go to next restaurant (if not exitting)
+
+			# no new or not recently visited restaurants were found in entire json dump
+			# however, if we found one already visited, go there
+			except ValueError:
+				if atleast_one:
+					found = False
+					i = 0 # restart search from beginning of json
+					while !found:
+						entry = db.GqlQuery("SELECT * FROM PreviousRecs where place = :1", data['response']['venues'][i]['name']).get()
+						if entry:
+							found = True # exit loop now
+							# don't need to update db, because it's already marked recently visited
+							name = data['response']['venues'][i]['name']
+							lat = data['response']['venues'][i]['location']['lat']
+							lon = data['response']['venues'][i]['location']['lng']
+						else:
+							continue # we know there is atleast one restaurant so just keep looking
+						i++
+
+				else:
+					# if we get here, absolutely no restaurants match the search criteria within 1000m
+					returnVal(self, lambda : json.dump(["none"], self.response.out))
 
 			returnVal(self, lambda : json.dump([name, lat, lon], self.response.out))
 
@@ -328,56 +344,18 @@ class SetAvailable(webapp2.RequestHandler):
 		lat = self.request.get('lat')
 		lon = self.request.get('lon')
 
+		# categories and their votes will all be sent as one string delimited
+		# by the ';' character, with a category and its vote delimited by the
+		# ',' character.
 
-		cats = []
+		cats = self.request.get('cats')
 		categories = []
 
-		# to set an agreed amount of data over the server that is not 84 different strings,
-		# the strings will be concatenated on the android side with commas separating values,
-		# then they will be sent in 17 packages of agreed length and reprocessed on the
-		# server side
-
-		cat1 = self.request.get('cat1')
-		cats.append(cat1)
-		cat2 = self.request.get('cat2')
-		cats.append(cat2)
-		cat3 = self.request.get('cat3')
-		cats.append(cat3)
-		cat4 = self.request.get('cat4')
-		cats.append(cat4)
-		cat5 = self.request.get('cat5')
-		cats.append(cat5)
-		cat6 = self.request.get('cat6')
-		cats.append(cat6)
-		cat7 = self.request.get('cat7')
-		cats.append(cat7)
-		cat8 = self.request.get('cat8')
-		cats.append(cat8)
-		cat9 = self.request.get('cat9')
-		cats.append(cat9)
-		cat10 = self.request.get('cat10')
-		cats.append(cat10)
-		cat11 = self.request.get('cat11')
-		cats.append(cat11)
-		cat12 = self.request.get('cat12')
-		cats.append(cat12)
-		cat13 = self.request.get('cat13')
-		cats.append(cat13)
-		cat14 = self.request.get('cat14')
-		cats.append(cat14)
-		cat15 = self.request.get('cat15')
-		cats.append(cat15)
-		cat16 = self.request.get('cat16')
-		cats.append(cat16)
-		cat17 = self.request.get('cat17')
-		cats.append(cat17)
-
-		for cat in cats:
-			pairs = cat.split(';')
-			for pair in pairs:
-				segs = pair.split(',')
-				vote = (segs[0], segs[1])
-				categories.append(vote)
+		pairs = cats.split(';')
+		for pair in pairs:
+			segs = pair.split(',')
+			vote = (segs[0], segs[1])
+			categories.append(vote)
 
 		self.set_available(phoneNumber, email, firstName, lastName, lat, lon, categories)
 
@@ -392,23 +370,7 @@ class SetAvailable(webapp2.RequestHandler):
 	       <p>Last<input type="text" name="last" /></p>
 	       <p>Lat<input type="text" name="lat" /></p>
 	       <p>Lon<input type="text" name="lon" /></p>
-	       <p>cat1<input type="text" name="cat1" /></p>
-	       <p>cat2<input type="text" name="cat2" /></p>
-	       <p>cat3<input type="text" name="cat3" /></p>
-	       <p>cat4<input type="text" name="cat4" /></p>
-	       <p>cat5<input type="text" name="cat5" /></p>
-	       <p>cat6<input type="text" name="cat6" /></p>
-	       <p>cat7<input type="text" name="cat7" /></p>
-	       <p>cat8<input type="text" name="cat8" /></p>
-	       <p>cat9<input type="text" name="cat9" /></p>
-	       <p>cat10<input type="text" name="cat10" /></p>
-	       <p>cat11<input type="text" name="cat11" /></p>
-	       <p>cat12<input type="text" name="cat12" /></p>
-	       <p>cat13<input type="text" name="cat13" /></p>
-	       <p>cat14<input type="text" name="cat14" /></p>
-	       <p>cat15<input type="text" name="cat15" /></p>
-	       <p>cat16<input type="text" name="cat16" /></p>
-	       <p>cat17<input type="text" name="cat17" /></p>
+	       <p>categories<input type="text" name="cats" /></p>
 	       <input type="hidden" name="fmt" value="html">
 	       <input type="submit" value="Set Available">
 	    </form></body></html>\n''')
@@ -591,7 +553,6 @@ class MainPage(webapp2.RequestHandler):
 application = webapp2.WSGIApplication([
 	('/', MainPage),
 	('/setactive', SetActive),
-	('/getvalue', GetValue),
 	('/getrecommendation', GetRecommendation),
 	('/setavailable', SetAvailable),
 	('/registeruser', RegisterUser),
