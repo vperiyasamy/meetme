@@ -128,7 +128,11 @@ class GetRecommendation(webapp2.RequestHandler):
 		bucket = '/' + bucket_name
 
 
-		group = db.GqlQuery("SELECT * FROM ActiveUsers WHERE active != :1", False)
+		group = db.GqlQuery("SELECT * FROM ActiveUsers WHERE active = :1", True)
+
+		if group.count(1) == 0:
+			returnVal(self, lambda : json.dump(["No Active Users"], self.response.out))
+			return
 
 		# each of the following tags corresponds to a restaurant category on the Foursquare API for searching locations
 		# each restaurant category initialized to 0 for the tallying of preferences
@@ -222,7 +226,7 @@ class GetRecommendation(webapp2.RequestHandler):
 			i = 0 # loop variable
 
 			try:
-				while !found:
+				while not found:
 					entry = db.GqlQuery("SELECT * FROM PreviousRecs where place = :1", data['response']['venues'][i]['name']).get()
 					# already have restaurant in db
 					if entry:
@@ -249,7 +253,7 @@ class GetRecommendation(webapp2.RequestHandler):
 					# add (or update) place to db
 					db_entry = PreviousRecs(key_name = name, place = name, visited = visited)	
 					db_entry.put()		
-					i++ # go to next restaurant (if not exitting)
+					i += 1 # go to next restaurant (if not exitting)
 
 			# no new or not recently visited restaurants were found in entire json dump
 			# however, if we found one already visited, go there
@@ -257,7 +261,7 @@ class GetRecommendation(webapp2.RequestHandler):
 				if atleast_one:
 					found = False
 					i = 0 # restart search from beginning of json
-					while !found:
+					while not found:
 						entry = db.GqlQuery("SELECT * FROM PreviousRecs where place = :1", data['response']['venues'][i]['name']).get()
 						if entry:
 							found = True # exit loop now
@@ -267,13 +271,20 @@ class GetRecommendation(webapp2.RequestHandler):
 							lon = data['response']['venues'][i]['location']['lng']
 						else:
 							continue # we know there is atleast one restaurant so just keep looking
-						i++
+						i += 1
 
 				else:
 					# if we get here, absolutely no restaurants match the search criteria within 1000m
 					returnVal(self, lambda : json.dump(["none"], self.response.out))
 
 			returnVal(self, lambda : json.dump([name, lat, lon], self.response.out))
+
+			# lastly, reset all users to inactive
+			group = db.GqlQuery("SELECT * FROM ActiveUsers")
+
+			for person in group:
+				person.active = False
+				person.put()
 
 		except urlfetch.Error:
 			logging.exception('Caught exception fetching url')
@@ -299,11 +310,15 @@ class GetRecommendation(webapp2.RequestHandler):
 
 class SetAvailable(webapp2.RequestHandler):
 
-	def set_available(self, phoneNumber, email, firstName, lastName, lat, lon, categories):
+	def set_available(self, user, email, firstName, lastName, lat, lon, categories):
 
 		#update user in db to be active
-		entry = ActiveUsers(key_name = phoneNumber, user = phoneNumber, active = True)
-		entry.put()
+		entry = db.GqlQuery("SELECT * FROM ActiveUsers WHERE user = :1", user).get()
+		if entry:
+			entry.active = True
+			entry.put()
+		else:
+			returnVal(self, lambda : json.dump(["UserNotFound"], self.response.out))
 
 		bucket_name = os.environ.get('BUCKET_NAME', app_identity.get_default_gcs_bucket_name())
 		#self.response.headers['Content-Type'] = 'text/plain'
@@ -311,12 +326,12 @@ class SetAvailable(webapp2.RequestHandler):
 		#self.response.write('Using bucket name: ' + bucket_name + '\n\n')
 
 		bucket = '/' + bucket_name
-		filename = bucket + '/' + phoneNumber + '.txt'
+		filename = bucket + '/' + user + '.txt'
 
 		write_retry_params = gcs.RetryParams(backoff_factor=1.1)
 		try:
 			gcs_file = gcs.open(filename,'w', content_type='text/plain', retry_params=write_retry_params)
-			gcs_file.write((phoneNumber + '\n').encode('utf-8'))
+			gcs_file.write((user + '\n').encode('utf-8'))
 			gcs_file.write((email + '\n').encode('utf-8'))
 			gcs_file.write((firstName + '\n').encode('utf-8'))
 			gcs_file.write((lastName + '\n').encode('utf-8'))
@@ -337,7 +352,7 @@ class SetAvailable(webapp2.RequestHandler):
 	def post(self):
 		# https://developers.google.com/appengine/docs/python/tools/webapp/requestclass
 		
-		phoneNumber = self.request.get('phone')
+		user = self.request.get('phone')
 		email = self.request.get('email')
 		firstName = self.request.get('first')
 		lastName = self.request.get('last')
@@ -357,7 +372,7 @@ class SetAvailable(webapp2.RequestHandler):
 			vote = (segs[0], segs[1])
 			categories.append(vote)
 
-		self.set_available(phoneNumber, email, firstName, lastName, lat, lon, categories)
+		self.set_available(user, email, firstName, lastName, lat, lon, categories)
 
 	def get(self):
 		self.response.out.write('''
@@ -464,7 +479,7 @@ class UnregisterUser(webapp2.RequestHandler):
 				returnVal(self, lambda : json.dump(["Error - No user with that phone number"], self.response.out))
 
 		except gcs.NotFoundError:
-			returnVal(self, lambda : json.dump(["Error - No user with that phone number"], self.response.out))
+			returnVal(self, lambda : json.dump(["Error - No userfile with that phone number"], self.response.out))
 
 	def post(self):
 		phoneNumber = self.request.get('phone')
@@ -504,6 +519,9 @@ class RefreshGroup(webapp2.RequestHandler):
 				returnlist.append(gcs_file.readline()[:-1])
 				returnlist.append(gcs_file.readline()[:-1])
 				returnlist.append(person.active)
+				if person.active:
+					returnlist.append(gcs_file.readline()[:-1]) # latitude
+					returnlist.append(gcs_file.readline()[:-1]) # longitude
 
 				gcs_file.close()
 
