@@ -195,7 +195,7 @@ public class MessageFragment extends Fragment {
                                                      //Execute register request
                                                      httpRecommend hR = new httpRecommend();
                                                      hR.execute(aStr);
-                                                     getRecommendation(v);
+                                                     //getRecommendation(v);
                                                  }
                                              }
                                          }
@@ -342,7 +342,7 @@ public class MessageFragment extends Fragment {
             try {
                 JSONArray jsonArray = new JSONArray(temp);
                 recommendReply = jsonArray;
-                reply = "recommendation retrieved";
+                reply = jsonArray.getString(0);
                 //reply = jsonArray.getString(0);
 
             } catch (JSONException e) {
@@ -357,17 +357,20 @@ public class MessageFragment extends Fragment {
         @Override
         protected void onPostExecute(String res) {
 
-            if (res.equalsIgnoreCase("UserAvailable")) {
+            if (res.equalsIgnoreCase("none")) {
                 Toast.makeText(getActivity(),
-                        "Availability Set", Toast.LENGTH_SHORT).show();
+                        "There are absolutely no restaurants around your group meeting your preferences", Toast.LENGTH_LONG).show();
             }
-            else if (res.equalsIgnoreCase("UserNotFound")) {
+            else if (res.equalsIgnoreCase("User not found")) {
                 Toast.makeText(getActivity(),
-                        "There was an error setting availability. Please Try Again", Toast.LENGTH_SHORT).show();
+                        "There was an error getting the recommendation. Please Try Again", Toast.LENGTH_SHORT).show();
+            }
+            else if (res.equalsIgnoreCase("No Active Users")) {
+                Toast.makeText(getActivity(),
+                        "There are no active users (including you) in your group.", Toast.LENGTH_SHORT).show();
             }
             else {
-                Toast.makeText(getActivity(),
-                        "There was an error setting availability. Please Try Again", Toast.LENGTH_SHORT).show();
+                getRecommendation();
             }
 
         }
@@ -475,7 +478,7 @@ public class MessageFragment extends Fragment {
     //Query should return:
     // 1. Name of restaurant
     // 2. Location
-    public void getRecommendation(View v){
+    public void getRecommendation(){
         //Recommendation info received from server stored in recommendReply
         //Filter through info
         String restaurantName = "";
