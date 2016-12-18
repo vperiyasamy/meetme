@@ -362,6 +362,7 @@ public class MainActivity extends AppCompatActivity
                     httpActive hR = new httpActive();
                     hR.execute(aStr);
                     setAvailable(getCurrentFocus());
+
                 }
 
             } else {
@@ -389,11 +390,6 @@ public class MainActivity extends AppCompatActivity
     public void setAvailable(View v){
         //Access app user's online status and set as active
         me.setOnline(true);
-
-        //Activate fragment to update preferences
-        DialogFragment updateDialog = new updatePrefsDialogFragment();
-        updateDialog.show(getFragmentManager(),"updatePrefs");
-
     }
 
     // Preferences should be formatted as 1 long string and as follows:

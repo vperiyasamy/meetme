@@ -30,6 +30,7 @@ public class updatePrefsDialogFragment extends DialogFragment {
                         fTransaction.replace(R.id.content_main, fragment);
                         fTransaction.addToBackStack(null);
                         fTransaction.commit();
+
                     }
                 })
                 .setNegativeButton("No", new DialogInterface.OnClickListener() {
