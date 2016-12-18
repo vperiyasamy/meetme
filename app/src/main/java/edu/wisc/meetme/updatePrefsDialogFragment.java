@@ -27,7 +27,7 @@ public class updatePrefsDialogFragment extends DialogFragment {
                         Fragment fragment = new ProfileFragment();
                         FragmentManager fman = getActivity().getFragmentManager();
                         FragmentTransaction fTransaction = fman.beginTransaction();
-                        fTransaction.replace(R.id.fragment_discover, fragment);
+                        fTransaction.replace(R.id.content_main, fragment);
                         fTransaction.addToBackStack(null);
                         fTransaction.commit();
                     }
