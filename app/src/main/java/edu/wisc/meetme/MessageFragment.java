@@ -55,7 +55,6 @@ public class MessageFragment extends Fragment {
 
     SharedPreferences sharedPreferences;
     JSONArray recommendReply;
-    User me;
 
     final ArrayList<String> foodOption = new ArrayList<String>(asList(
             "Afghan",
@@ -179,12 +178,6 @@ public class MessageFragment extends Fragment {
         sharedPreferences = getActivity().getSharedPreferences("edu.wisc.meetme", Context.MODE_PRIVATE);
         //Get app-user info and create a User object
 
-        // Get the data from local memory to create user object for app-user
-        String first = sharedPreferences.getString("FirstName", ""); // "" menas default value
-        String last = sharedPreferences.getString("LastName", "");
-        String id = sharedPreferences.getString("Phone", "");
-        me = new User(id, first, last, false);
-
         Button recommendButton = (Button)(getActivity().findViewById(R.id.recommendButton));
         recommendButton.setOnClickListener(new View.OnClickListener() {
                                              public void onClick(View v) {
@@ -192,7 +185,7 @@ public class MessageFragment extends Fragment {
                                                  String[ ] aStr = new String[1] ;
 
                                                  // fill in string array[0] with phone number from file storage
-                                                 aStr[0] = me.getID();
+                                                 aStr[0] = MainActivity.me.getID();
 
 
                                                  if (!aStr[0].isEmpty())
@@ -227,16 +220,16 @@ public class MessageFragment extends Fragment {
 
 
                                                    // 1. Phone number
-                                                   aStr[0] = me.getID();
+                                                   aStr[0] = MainActivity.me.getID();
 
                                                    // 2. Email
                                                    aStr[1] = sharedPreferences.getString("Email", "");
 
                                                    // 3. First name
-                                                   aStr[2] = me.getFirst();
+                                                   aStr[2] = MainActivity.me.getFirst();
 
                                                    // 4. Last name
-                                                   aStr[3] = me.getLast();
+                                                   aStr[3] = MainActivity.me.getLast();
 
                                                    // 5. Latitude
                                                    aStr[4] = sharedPreferences.getString("Latitude", "");
@@ -475,7 +468,7 @@ public class MessageFragment extends Fragment {
     // 7. 17 strings (preferences package), revise later
     public void setAvailable(View v){
         //Access app user's online status and set as active
-        me.setOnline(true);
+        MainActivity.me.setOnline(true);
 
         //Activate fragment to update preferences
         DialogFragment updateDialog = new updatePrefsDialogFragment();

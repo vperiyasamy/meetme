@@ -56,7 +56,6 @@ public class FriendsFragment extends Fragment {
     ArrayList<User> offline = new ArrayList<User>();
     ArrayAdapter<String> onlineAdapter, offlineAdapter;
     JSONArray refreshReply;
-    public static User me;
     boolean startup;
 
     // TODO: Rename and change types of parameters
@@ -101,11 +100,7 @@ public class FriendsFragment extends Fragment {
 
         //Get app-user info and create a User object
 
-        // Get the data from local memory
-        String first = sharedPreferences.getString("FirstName", ""); // "" menas default value
-        String last = sharedPreferences.getString("LastName", "");
-        String id = sharedPreferences.getString("Phone", "");
-        me = new User(id, first, last, false);
+
 
         //Set up button and listener to refresh list
         Button refreshButton = (Button)(getActivity().findViewById(R.id.refreshButton)); //Not too sure if this will work
@@ -115,7 +110,7 @@ public class FriendsFragment extends Fragment {
                                                  String[ ] aStr = new String[1] ;
 
                                                  // fill in string array[0] with phone number from file storage
-                                                 aStr[0] = me.getID();
+                                                 aStr[0] = MainActivity.me.getID();
 
 
                                                  if (!aStr[0].isEmpty())
@@ -344,7 +339,7 @@ public class FriendsFragment extends Fragment {
         boolean uadded;
         double melat = Double.parseDouble(sharedPreferences.getString("Latitude", ""));
         double melong = Double.parseDouble(sharedPreferences.getString("Longitude", ""));
-        me.setlocation(melat, melong);
+        MainActivity.me.setlocation(melat, melong);
         for(User u: users){
             uadded = false;
             if(sortedList.size() == 0){
@@ -354,7 +349,7 @@ public class FriendsFragment extends Fragment {
                 //compare u's distance from user with the distances within sortedList
                 for (User q : sortedList) {
                     Location uloc = u.getLocation();
-                    Location meloc = me.getLocation();
+                    Location meloc = MainActivity.me.getLocation();
                     Location qloc = q.getLocation();
                     //Once gps is properly coded, will have to change how distance is calculated///
                     udis = getDistanceFromLatLonInKm(uloc.getLatitude(), uloc.getLongitude(),

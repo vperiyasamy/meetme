@@ -59,6 +59,7 @@ public class MainActivity extends AppCompatActivity
 
     boolean isAvailable;
     SharedPreferences sharedPreferences = getSharedPreferences("edu.wisc.meetme", Context.MODE_PRIVATE);
+    public static User me;
 
     // user friendly string names of each category
     private final String[] categories = {
@@ -241,6 +242,12 @@ public class MainActivity extends AppCompatActivity
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
+        // Get the data from local memory
+        String first = sharedPreferences.getString("FirstName", ""); // "" menas default value
+        String last = sharedPreferences.getString("LastName", "");
+        String id = sharedPreferences.getString("Phone", "");
+        me = new User(id, first, last, false);
+
         // initialize hash table
         for(int i = 0; i < categoryIds.length; i++) {
             categoryHash.put(categories[i], categoryIds[i]);
@@ -379,7 +386,7 @@ public class MainActivity extends AppCompatActivity
     // 7. 17 strings (preferences package), revise later
     public void setAvailable(View v){
         //Access app user's online status and set as active
-        FriendsFragment.me.setOnline(true);
+        me.setOnline(true);
 
         //Activate fragment to update preferences
         DialogFragment updateDialog = new updatePrefsDialogFragment();
