@@ -192,10 +192,11 @@ public class FriendsFragment extends Fragment {
             for (int i = 0; i < serverList.length();) {
                 int datalength = 0;
                 try {
+                    System.out.println(i);
                     System.out.println(serverList.getString(i));
                     String id = (String)serverList.get(i);
                     String[] name = {serverList.getString(i + 1), serverList.getString(i + 2)};
-                    boolean active = serverList.get(i + 3).equals("true");
+                    boolean active = (boolean)serverList.get(i + 3);//.equals("true");
                     User curr = new User(id, name[0], name[1], active);
                     if(active){
                         double lat = Double.parseDouble(serverList.getString(i + 4));

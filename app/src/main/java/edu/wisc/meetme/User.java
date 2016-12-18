@@ -24,7 +24,10 @@ public class User {
         name[0] = first;
         name[1] = last;
         online = active;
+        location = new Location("dummyprovider");
     }
+
+
 
     public void setOnline(boolean o){
         online = o;
@@ -59,6 +62,5 @@ public class User {
         location.setLatitude(lat);
         location.setLongitude(lon);
     }
-
 
 }
