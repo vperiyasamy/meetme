@@ -405,13 +405,13 @@ class RegisterUser(webapp2.RequestHandler):
 		#The retry_params specified in the open call will override the default
 		#retry params for this particular file handle.
 
-		self.response.write('Creating file %s\n' % filename)
+		#self.response.write('Creating file %s\n' % filename)
 
 		write_retry_params = gcs.RetryParams(backoff_factor=1.1)
 		try:
 			gcs_file = gcs.open(filename,'r')
 			gcs_file.close()
-			returnVal(self, lambda :json.dump(["AlreadyRegistered"], self.response.out))
+			returnVal(self, lambda :json.dump(["AlreadyRegistered", "ignore"], self.response.out))
 
 		except gcs.NotFoundError:
 			gcs_file = gcs.open(filename,'w', content_type='text/plain', retry_params=write_retry_params)
@@ -421,7 +421,7 @@ class RegisterUser(webapp2.RequestHandler):
 			gcs_file.write((lastName + '\n').encode('utf-8'))
 			gcs_file.close()
 
-			returnVal(self, lambda : json.dump(["Success"], self.response.out))
+			returnVal(self, lambda : json.dump(["ignore", "Success"], self.response.out))
 
 		#entry = db.GqlQuery("SELECT * FROM StoredData where tag = :1", tag).get()
 		#if entry:

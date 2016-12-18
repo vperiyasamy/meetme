@@ -18,7 +18,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
@@ -350,6 +352,25 @@ public class MessageFragment extends Fragment {
 
             return reply;
         }
+
+        // Process the server's acknowledgement
+        @Override
+        protected void onPostExecute(String res) {
+
+            if (res.equalsIgnoreCase("UserAvailable")) {
+                Toast.makeText(getActivity(),
+                        "Availability Set", Toast.LENGTH_SHORT).show();
+            }
+            else if (res.equalsIgnoreCase("UserNotFound")) {
+                Toast.makeText(getActivity(),
+                        "There was an error setting availability. Please Try Again", Toast.LENGTH_SHORT).show();
+            }
+            else {
+                Toast.makeText(getActivity(),
+                        "There was an error setting availability. Please Try Again", Toast.LENGTH_SHORT).show();
+            }
+
+        }
     }
 
     protected class httpActive extends AsyncTask<String, Void, String> {
@@ -360,15 +381,19 @@ public class MessageFragment extends Fragment {
 
             //Construct an HTTP POST
             HttpClient httpclient = new DefaultHttpClient();
-            HttpPost setActive = new HttpPost("http://meetmeece454.appspot.com/getrecommendation");
+            HttpPost setActive = new HttpPost("http://meetmeece454.appspot.com/setavailable");
 
             // Values to be sent from android app to server
             ArrayList<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>();
 
-            // "tag" is the name of the text form on the webserver
-            // "value" is the value that the client is submitting to the server
-            // These two are specified by the server. The cilent side program must respect.
             nameValuePairs.add(new BasicNameValuePair("phone", strs[0]));
+            nameValuePairs.add(new BasicNameValuePair("email", strs[1]));
+            nameValuePairs.add(new BasicNameValuePair("first", strs[2]));
+            nameValuePairs.add(new BasicNameValuePair("last", strs[3]));
+            nameValuePairs.add(new BasicNameValuePair("lat", strs[4]));
+            nameValuePairs.add(new BasicNameValuePair("lon", strs[5]));
+            nameValuePairs.add(new BasicNameValuePair("cats", strs[6]));
+
 
             try {
                 UrlEncodedFormEntity httpEntity = new UrlEncodedFormEntity(nameValuePairs);
@@ -391,8 +416,7 @@ public class MessageFragment extends Fragment {
             // Decompose the server's acknowledgement into a JSON array
             try {
                 JSONArray jsonArray = new JSONArray(temp);
-                reply = "user is now active";
-                //reply = jsonArray.getString(0);
+                reply = jsonArray.getString(0);
 
             } catch (JSONException e) {
                 System.out.println("Error in JSON decoding");
@@ -400,6 +424,25 @@ public class MessageFragment extends Fragment {
             }
 
             return reply;
+        }
+
+        // Process the server's acknowledgement
+        @Override
+        protected void onPostExecute(String res) {
+
+            if (res.equalsIgnoreCase("UserAvailable")) {
+                Toast.makeText(getActivity(),
+                        "Availability Set", Toast.LENGTH_SHORT).show();
+            }
+            else if (res.equalsIgnoreCase("UserNotFound")) {
+                Toast.makeText(getActivity(),
+                        "There was an error setting availability. Please Try Again", Toast.LENGTH_SHORT).show();
+            }
+            else {
+                Toast.makeText(getActivity(),
+                        "There was an error setting availability. Please Try Again", Toast.LENGTH_SHORT).show();
+            }
+
         }
     }
 
