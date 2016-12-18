@@ -26,6 +26,7 @@ import org.json.JSONException;
 //import org.apache.commons.compress.utils.IOUtils;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -135,6 +136,7 @@ public class RegisterActivity extends Activity {
             try {
                 JSONArray jsonArray = new JSONArray(temp);
                 reply = jsonArray.getString(0);
+                System.out.println(reply);
 
             } catch (JSONException e) {
                 System.out.println("Error in JSON decoding");
@@ -155,7 +157,8 @@ public class RegisterActivity extends Activity {
                 sharedPreferences.edit().putString("Email", ((EditText)findViewById(R.id.email)).getText().toString()).apply();
                 sharedPreferences.edit().putString("FirstName", ((EditText)findViewById(R.id.firstname)).getText().toString()).apply();
                 sharedPreferences.edit().putString("LastName", ((EditText)findViewById(R.id.lastname)).getText().toString()).apply();
-
+                Intent i = new Intent(RegisterActivity.this, LoginActivity.class);
+                startActivity(i);
             }
             else if (res.equalsIgnoreCase("AlreadyRegistered")) {
                 Toast.makeText(getApplicationContext(),

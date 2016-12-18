@@ -10,6 +10,8 @@ import android.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.LinearInterpolator;
+import android.widget.AbsListView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 
@@ -25,6 +27,8 @@ import org.apache.http.util.EntityUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
 import android.content.SharedPreferences;
+import android.widget.LinearLayout;
+import android.widget.ListView;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
 
@@ -97,16 +101,6 @@ public class FriendsFragment extends Fragment {
             mParam1 = getArguments().getString(ARG_PARAM1);
             mParam2 = getArguments().getString(ARG_PARAM2);
         }
-        
-        onlineNames = new ArrayList<String>();
-        offlineNames = new ArrayList<String>();
-
-        startup = true;
-        onlineAdapter = new ArrayAdapter<String>(getActivity(), android.R.layout.simple_list_item_1, R.id.friendsActive, onlineNames);
-        offlineAdapter = new ArrayAdapter<String>(getActivity(), android.R.layout.simple_list_item_1, R.id.friendsOffline, offlineNames);
-
-        //Get app-user info and create a User object
-
 
 
     }
@@ -198,6 +192,7 @@ public class FriendsFragment extends Fragment {
             for (int i = 0; i < serverList.length();) {
                 int datalength = 0;
                 try {
+                    System.out.println(serverList.getString(i));
                     String id = (String)serverList.get(i);
                     String[] name = {serverList.getString(i + 1), serverList.getString(i + 2)};
                     boolean active = serverList.get(i + 3).equals("true");
@@ -424,7 +419,20 @@ public class FriendsFragment extends Fragment {
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
 
+
+
+
         RelativeLayout myRelativeLayout = (RelativeLayout) inflater.inflate(R.layout.fragment_friends, container, false);
+
+
+        onlineNames = new ArrayList<String>();
+        offlineNames = new ArrayList<String>();
+
+        startup = true;
+
+
+
+
 
         //Set up button and listener to refresh list
         Button refreshButton = (Button)myRelativeLayout.findViewById(R.id.refreshButton); //Not too sure if this will work
@@ -447,9 +455,28 @@ public class FriendsFragment extends Fragment {
                                          }
         );
 
+
+
+
         //When the user gets online, should send a ping to the server asking for list of active friends
         refreshButton.callOnClick();
 
+        System.out.println("!!!!!!!!!!!");
+
+        onlineAdapter = new ArrayAdapter<String>(getActivity(), android.R.layout.simple_list_item_1, onlineNames);
+        offlineAdapter = new ArrayAdapter<String>(getActivity(), android.R.layout.simple_list_item_1, offlineNames);
+
+        //Get app-user info and create a User object
+        ListView friendActiveList = (ListView) myRelativeLayout.findViewById(R.id.friendsActive);
+        ListView friendOfflineList = (ListView) myRelativeLayout.findViewById(R.id.friendsOffline);
+
+        friendActiveList.setChoiceMode(AbsListView.CHOICE_MODE_SINGLE);
+        friendOfflineList.setChoiceMode(AbsListView.CHOICE_MODE_SINGLE);
+
+        friendActiveList.setAdapter(onlineAdapter);
+        friendOfflineList.setAdapter(offlineAdapter);
+
+        System.out.println("??????????????");
         return myRelativeLayout;
     }
 
