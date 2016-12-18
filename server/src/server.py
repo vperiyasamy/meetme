@@ -411,7 +411,7 @@ class RegisterUser(webapp2.RequestHandler):
 		try:
 			gcs_file = gcs.open(filename,'r')
 			gcs_file.close()
-			returnVal(self, lambda :json.dump(["AlreadyRegistered", "ignore"], self.response.out))
+			returnVal(self, lambda :json.dump(["AlreadyRegistered"], self.response.out))
 
 		except gcs.NotFoundError:
 			gcs_file = gcs.open(filename,'w', content_type='text/plain', retry_params=write_retry_params)
@@ -421,7 +421,11 @@ class RegisterUser(webapp2.RequestHandler):
 			gcs_file.write((lastName + '\n').encode('utf-8'))
 			gcs_file.close()
 
-			returnVal(self, lambda : json.dump(["ignore", "Success"], self.response.out))
+			# enter them in db
+			entry = ActiveUsers(key_name = phoneNumber, user = phoneNumber, active = False)
+			entry.put()
+
+			returnVal(self, lambda : json.dump(["Success"], self.response.out))
 
 		#entry = db.GqlQuery("SELECT * FROM StoredData where tag = :1", tag).get()
 		#if entry:
@@ -552,6 +556,46 @@ class RefreshGroup(webapp2.RequestHandler):
 	    </form></body></html>\n''')
 
 
+class DeleteAll(webapp2.RequestHandler):
+
+	def delete_all(self):
+
+		# first remove from file system
+		bucket_name = os.environ.get('BUCKET_NAME', app_identity.get_default_gcs_bucket_name())
+
+		bucket = '/' + bucket_name
+
+		# first remove them from db
+		group = db.GqlQuery("SELECT * FROM ActiveUsers")
+		
+		for person in group:
+			filename = bucket + '/' + person.user + '.txt'
+
+			try:
+				gcs.delete(filename)
+			except gcs.NotFoundError:
+				returnVal(self, lambda : json.dump(["Error - No userfile with that phone number"], self.response.out))
+
+		group = db.GqlQuery("SELECT * FROM ActiveUsers")
+		users = group.fetch()
+		db.delete(users)
+
+		returnVal(self, lambda : json.dump(["All Users Deleted"], self.response.out))
+
+
+	def post(self):
+		self.delete_all()
+
+# this is just for browser test
+	def get(self):
+		self.response.out.write('''
+	    <html><body>
+	    <form action="/deleteall" method="post"
+	          enctype=application/x-www-form-urlencoded>
+	       <input type="hidden" name="fmt" value="html">
+	       <input type="submit" value="DELETE EVERYONE">
+	    </form></body></html>\n''')
+
 #### Utilty procedures for generating the output
 #### Handler is an appengine request handler.  writer is a thunk
 #### (i.e. a procedure of no arguments) that does the write when invoked.
@@ -575,6 +619,7 @@ application = webapp2.WSGIApplication([
 	('/setavailable', SetAvailable),
 	('/registeruser', RegisterUser),
 	('/unregisteruser', UnregisterUser),
-	('/refreshgroup', RefreshGroup)
+	('/refreshgroup', RefreshGroup),
+	('/deleteall', DeleteAll)
 	], debug=True)
 
