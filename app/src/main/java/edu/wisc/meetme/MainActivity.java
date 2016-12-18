@@ -477,8 +477,7 @@ public class MainActivity extends AppCompatActivity
             // Decompose the server's acknowledgement into a JSON array
             try {
                 JSONArray jsonArray = new JSONArray(temp);
-                reply = "user is now active";
-                //reply = jsonArray.getString(0);
+                reply = jsonArray.getString(0);
 
             } catch (JSONException e) {
                 System.out.println("Error in JSON decoding");
@@ -486,6 +485,25 @@ public class MainActivity extends AppCompatActivity
             }
 
             return reply;
+        }
+
+        // Process the server's acknowledgement
+        @Override
+        protected void onPostExecute(String res) {
+
+            if (res.equalsIgnoreCase("UserAvailable")) {
+                Toast.makeText(getApplicationContext(),
+                        "Availability Set", Toast.LENGTH_SHORT).show();
+            }
+            else if (res.equalsIgnoreCase("UserNotFound")) {
+                Toast.makeText(getApplicationContext(),
+                        "There was an error setting availability. Please Try Again", Toast.LENGTH_SHORT).show();
+            }
+            else {
+                Toast.makeText(getApplicationContext(),
+                        "There was an error setting availability. Please Try Again", Toast.LENGTH_SHORT).show();
+            }
+
         }
     }
 

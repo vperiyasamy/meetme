@@ -183,46 +183,6 @@ public class MessageFragment extends Fragment {
 
 
     }
-    // Preferences should be formatted as 1 long string and as follows:
-    // "503288ae91d4c4b30a586d67,0;503288ae91d4c4b30a586d67,1;503288ae91d4c4b30a586d67,-1;503288ae91d4c4b30a586d67,0;503288ae91d4c4b30a586d67,1"
-    //   a. Category ID, then a comma
-    //   b. like(1), dislike(-1) or no preference(0) (int), then semicolon
-    //       - no semicolon at end of big string
-    public String getPrefs(){
-        ArrayList<String> prefs = null;
-        String toReturn = "";
-        try {
-
-            prefs = (ArrayList<String>) ObjectSerializer.deserialize(sharedPreferences.getString("FoodPreference", ObjectSerializer.serialize(new ArrayList<String>())));
-
-        } catch (IOException e) {
-
-            e.printStackTrace();
-
-        }
-        for(int i = 0; i < foodOption.size(); i++){
-                String id = "";
-                String value;
-
-                //get category id from hash table///////////DO WHEN HASH TABLE IS DONE////////
-
-                //Check if the food is in prefs, assign 1 if it is, 0 if not
-                if(prefs.indexOf(foodOption.get(i)) != -1){
-                    value = "1";
-                }
-                else{
-                    value = "0";
-                }
-
-                //add string to line
-                toReturn = toReturn + id + "," + value + ";";
-            //remove semicolon at end of long string
-
-        }
-        toReturn = toReturn.substring(0, toReturn.length() - 1);
-        return toReturn;
-    }
-
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -252,60 +212,6 @@ public class MessageFragment extends Fragment {
                                              }
                                          }
         );
-
-        Button availableButton = (Button)myRelativeLayout.findViewById(R.id.availableButton);
-        availableButton.setOnClickListener(new View.OnClickListener() {
-                                               public void onClick(View v) {
-                                                   //String array sent with info
-                                                   String[ ] aStr = new String[6] ;
-
-                                                   //Should send:
-                                                   // 1. Phone number
-                                                   // 2. Email
-                                                   // 3. First name
-                                                   // 4. Last name
-                                                   // 5. Latitude
-                                                   // 6. Longitude
-                                                   // 7. 1 long string
-                                                   // "503288ae91d4c4b30a586d67,0;503288ae91d4c4b30a586d67,1;503288ae91d4c4b30a586d67,-1;503288ae91d4c4b30a586d67,0;503288ae91d4c4b30a586d67,1"
-                                                   //   a. Category IDs, then a comma
-                                                   //   b. like(1), dislike(-1) or no preference(0) (int), then semicolon
-                                                   //       - no semicolon at end of big string
-
-
-                                                   // 1. Phone number
-                                                   aStr[0] = MainActivity.me.getID();
-
-                                                   // 2. Email
-                                                   aStr[1] = sharedPreferences.getString("Email", "");
-
-                                                   // 3. First name
-                                                   aStr[2] = MainActivity.me.getFirst();
-
-                                                   // 4. Last name
-                                                   aStr[3] = MainActivity.me.getLast();
-
-                                                   // 5. Latitude
-                                                   aStr[4] = sharedPreferences.getString("Latitude", "");
-
-                                                   // 6. Longitude
-                                                   aStr[5] = sharedPreferences.getString("Longitude", "");
-
-                                                   // 7. Preferences
-                                                   String prefs = getPrefs();
-                                                   aStr[6] = prefs;
-
-                                                   if (!aStr[0].isEmpty())
-                                                   {
-                                                       //Execute register request
-                                                       httpActive hR = new httpActive();
-                                                       hR.execute(aStr);
-                                                       setAvailable(v);
-                                                   }
-                                               }
-                                           }
-        );
-
 
         return myRelativeLayout;
     }
@@ -351,7 +257,6 @@ public class MessageFragment extends Fragment {
                 JSONArray jsonArray = new JSONArray(temp);
                 recommendReply = jsonArray;
                 reply = jsonArray.getString(0);
-                //reply = jsonArray.getString(0);
 
             } catch (JSONException e) {
                 System.out.println("Error in JSON decoding");
@@ -384,78 +289,6 @@ public class MessageFragment extends Fragment {
         }
     }
 
-    protected class httpActive extends AsyncTask<String, Void, String> {
-        @Override
-        protected String doInBackground(String... strs) {
-            String reply = null;
-            String temp = ""; //capture acknowledgement from server, if any
-
-            //Construct an HTTP POST
-            HttpClient httpclient = new DefaultHttpClient();
-            HttpPost setActive = new HttpPost("http://meetmeece454.appspot.com/setavailable");
-
-            // Values to be sent from android app to server
-            ArrayList<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>();
-
-            nameValuePairs.add(new BasicNameValuePair("phone", strs[0]));
-            nameValuePairs.add(new BasicNameValuePair("email", strs[1]));
-            nameValuePairs.add(new BasicNameValuePair("first", strs[2]));
-            nameValuePairs.add(new BasicNameValuePair("last", strs[3]));
-            nameValuePairs.add(new BasicNameValuePair("lat", strs[4]));
-            nameValuePairs.add(new BasicNameValuePair("lon", strs[5]));
-            nameValuePairs.add(new BasicNameValuePair("cats", strs[6]));
-
-
-            try {
-                UrlEncodedFormEntity httpEntity = new UrlEncodedFormEntity(nameValuePairs);
-                setActive.setEntity(httpEntity);
-
-                //Execute HTTP POST
-                HttpResponse response = httpclient.execute(setActive);
-                //Capture acknowledgement from server
-                // In this demo app, the server returns "Update" if the tag already exists;
-                // Otherwise, the server returns "New"
-                temp = EntityUtils.toString(response.getEntity());
-            } catch (ClientProtocolException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
-                System.out.println("HTTP IO Exception.");
-                e.printStackTrace();
-            }
-
-
-            // Decompose the server's acknowledgement into a JSON array
-            try {
-                JSONArray jsonArray = new JSONArray(temp);
-                reply = jsonArray.getString(0);
-
-            } catch (JSONException e) {
-                System.out.println("Error in JSON decoding");
-                e.printStackTrace();
-            }
-
-            return reply;
-        }
-
-        // Process the server's acknowledgement
-        @Override
-        protected void onPostExecute(String res) {
-
-            if (res.equalsIgnoreCase("UserAvailable")) {
-                Toast.makeText(getActivity(),
-                        "Availability Set", Toast.LENGTH_SHORT).show();
-            }
-            else if (res.equalsIgnoreCase("UserNotFound")) {
-                Toast.makeText(getActivity(),
-                        "There was an error setting availability. Please Try Again", Toast.LENGTH_SHORT).show();
-            }
-            else {
-                Toast.makeText(getActivity(),
-                        "There was an error setting availability. Please Try Again", Toast.LENGTH_SHORT).show();
-            }
-
-        }
-    }
 
 
     // TODO: Rename method, update argument and hook method into UI event

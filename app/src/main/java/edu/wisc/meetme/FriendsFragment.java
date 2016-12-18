@@ -26,6 +26,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import android.content.SharedPreferences;
 import android.widget.RelativeLayout;
+import android.widget.Toast;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -147,8 +148,7 @@ public class FriendsFragment extends Fragment {
             try {
                 JSONArray jsonArray = new JSONArray(temp);
                 refreshReply = jsonArray;
-                reply = "refresh complete";
-                //reply = jsonArray.getString(0);
+                reply = jsonArray.getString(0);
 
             } catch (JSONException e) {
                 System.out.println("Error in JSON decoding");
@@ -156,6 +156,22 @@ public class FriendsFragment extends Fragment {
             }
 
             return reply;
+        }
+
+        // Process the server's acknowledgement
+        @Override
+        protected void onPostExecute(String res) {
+
+            if (res.equalsIgnoreCase("User Not Found")) {
+                Toast.makeText(getActivity(),
+                        "There was an error refreshing.", Toast.LENGTH_SHORT).show();
+            }
+            else {
+                refreshFriends();
+                Toast.makeText(getActivity(),
+                        "Refreshed!", Toast.LENGTH_SHORT).show();
+            }
+
         }
     }
 
@@ -423,7 +439,6 @@ public class FriendsFragment extends Fragment {
                                                      //Execute register request
                                                      httpRefresh hR = new httpRefresh();
                                                      hR.execute(aStr);
-                                                     refreshFriends();
                                                  }
                                              }
                                          }
