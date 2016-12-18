@@ -577,7 +577,7 @@ class DeleteAll(webapp2.RequestHandler):
 				returnVal(self, lambda : json.dump(["Error - No userfile with that phone number"], self.response.out))
 
 		group = db.GqlQuery("SELECT * FROM ActiveUsers")
-		users = group.fetch()
+		users = group.fetch(100)
 		db.delete(users)
 
 		returnVal(self, lambda : json.dump(["All Users Deleted"], self.response.out))
