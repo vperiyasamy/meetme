@@ -303,7 +303,7 @@ public class MainActivity extends AppCompatActivity
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.utility) {
-            if (isAvailable == false) {
+            if (!isAvailable) {
                 isAvailable = true;
                 Log.i("Available", "I am available");
                 Toast.makeText(getApplicationContext(), "I am available.", Toast.LENGTH_SHORT).show();                                                 //Store
@@ -356,11 +356,9 @@ public class MainActivity extends AppCompatActivity
                 }
 
             } else {
-                isAvailable = false;
-                Toast.makeText(getApplicationContext(), "I am not available.", Toast.LENGTH_SHORT).show();
-
-
-
+                //isAvailable = false;
+                //Toast.makeText(getApplicationContext(), "I am not available.", Toast.LENGTH_SHORT).show();
+                //FriendsFragment.me.setOnline(false);
 
             }
 
@@ -387,6 +385,47 @@ public class MainActivity extends AppCompatActivity
         DialogFragment updateDialog = new updatePrefsDialogFragment();
         updateDialog.show(getFragmentManager(),"updatePrefs");
 
+    }
+
+    // Preferences should be formatted as 1 long string and as follows:
+    // "503288ae91d4c4b30a586d67,0;503288ae91d4c4b30a586d67,1;503288ae91d4c4b30a586d67,-1;503288ae91d4c4b30a586d67,0;503288ae91d4c4b30a586d67,1"
+    //   a. Category ID, then a comma
+    //   b. like(1), dislike(-1) or no preference(0) (int), then semicolon
+    //       - no semicolon at end of big string
+    public String getPrefs(){
+        ArrayList<String> prefs = new ArrayList<String>();
+        String toReturn = "";
+        try {
+
+            prefs = (ArrayList<String>) ObjectSerializer.deserialize(sharedPreferences.getString("FoodPreference", ObjectSerializer.serialize(new ArrayList<String>())));
+
+        } catch (IOException e) {
+
+            e.printStackTrace();
+
+        }
+        for(String food : categories){
+            String id = "";
+            String value;
+
+            //get category id from hash table
+            id = categoryHash.get(food);
+
+            //Check if the food is in prefs, assign 1 if it is, 0 if not
+            if(prefs.contains(food)){
+                value = "1";
+            }
+            else{
+                value = "0";
+            }
+
+            //add string to line
+            toReturn = toReturn + id + "," + value + ";";
+            //remove semicolon at end of long string
+
+        }
+        toReturn = toReturn.substring(0, toReturn.length() - 1);
+        return toReturn;
     }
 
     //Asynchronous task that sends server request to set user as available.
