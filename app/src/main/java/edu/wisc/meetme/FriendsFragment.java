@@ -97,6 +97,9 @@ public class FriendsFragment extends Fragment {
             mParam1 = getArguments().getString(ARG_PARAM1);
             mParam2 = getArguments().getString(ARG_PARAM2);
         }
+        
+        onlineNames = new ArrayList<String>();
+        offlineNames = new ArrayList<String>();
 
         startup = true;
         onlineAdapter = new ArrayAdapter<String>(getActivity(), android.R.layout.simple_list_item_1, R.id.friendsActive, onlineNames);
