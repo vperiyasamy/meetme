@@ -50,7 +50,7 @@ public class GmapFragment extends Fragment implements OnMapReadyCallback {
     LocationListener locationListener;
     String latestLat;
     String latestLon;
-    final SharedPreferences sharedPreferences = getActivity().getSharedPreferences("edu.wisc.meetme", Context.MODE_PRIVATE);
+    SharedPreferences sharedPreferences;
 
 
     // This function is reached if the phone doesn't have proper permission such as certain level
@@ -78,6 +78,7 @@ public class GmapFragment extends Fragment implements OnMapReadyCallback {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         view = inflater.inflate(R.layout.fragment_gmap, container, false);
+        sharedPreferences = getActivity().getSharedPreferences("edu.wisc.meetme", Context.MODE_PRIVATE);
         return view;
     }
 
