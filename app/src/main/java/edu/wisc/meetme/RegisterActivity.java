@@ -2,6 +2,8 @@ package edu.wisc.meetme;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.List;
 import java.io.BufferedReader;
@@ -45,7 +47,7 @@ import android.view.inputmethod.EditorInfo;
 
 public class RegisterActivity extends Activity {
 
-    SharedPreferences sharedPreferences = this.getSharedPreferences("edu.wisc.meetme", Context.MODE_PRIVATE);
+    SharedPreferences sharedPreferences;
 
 
 
@@ -53,7 +55,7 @@ public class RegisterActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_register);
-
+        sharedPreferences = this.getSharedPreferences("edu.wisc.meetme", Context.MODE_PRIVATE);
         Button registerButton = (Button)findViewById(R.id.register);
         registerButton.setOnClickListener(new View.OnClickListener() {
                                            public void onClick(View v) {
@@ -75,10 +77,7 @@ public class RegisterActivity extends Activity {
                                                    // DISPLAY ERROR MESSAGE TO USER THAT FIELDS ARE INCOMPLETE
                                                	Toast.makeText(getApplicationContext(), "Please fill in all fields before registration", Toast.LENGTH_SHORT).show();
                                                }
-                                               sharedPreferences.edit().putString("Phone", aStr[0]).apply();
-                                               sharedPreferences.edit().putString("Email", aStr[1]).apply();
-                                               sharedPreferences.edit().putString("FirstName", aStr[2]).apply();
-                                               sharedPreferences.edit().putString("LastName", aStr[3]).apply();
+
                                            }
 
 
@@ -95,7 +94,7 @@ public class RegisterActivity extends Activity {
         @Override
         protected String doInBackground(String... strs) {
             String reply = null;
-            String temp=""; //capture acknowledgement from server, if any
+            String temp= ""; //capture acknowledgement from server, if any
 
             //Construct an HTTP POST
             HttpClient httpclient = new DefaultHttpClient();
@@ -121,6 +120,7 @@ public class RegisterActivity extends Activity {
                 //Capture acknowledgement from server
                 // In this demo app, the server returns "Update" if the tag already exists;
                 // Otherwise, the server returns "New"
+
                 temp = EntityUtils.toString(response.getEntity());
             }
             catch (ClientProtocolException e) {
@@ -151,6 +151,11 @@ public class RegisterActivity extends Activity {
             if (res.equalsIgnoreCase("Success")) {
                 Toast.makeText(getApplicationContext(),
                         "Registered Successfully!", Toast.LENGTH_SHORT).show();
+                sharedPreferences.edit().putString("Phone", ((EditText)findViewById(R.id.phoneno)).getText().toString()).apply();
+                sharedPreferences.edit().putString("Email", ((EditText)findViewById(R.id.email)).getText().toString()).apply();
+                sharedPreferences.edit().putString("FirstName", ((EditText)findViewById(R.id.firstname)).getText().toString()).apply();
+                sharedPreferences.edit().putString("LastName", ((EditText)findViewById(R.id.lastname)).getText().toString()).apply();
+
             }
             else if (res.equalsIgnoreCase("AlreadyRegistered")) {
                 Toast.makeText(getApplicationContext(),

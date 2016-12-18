@@ -25,6 +25,7 @@ import org.apache.http.util.EntityUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
 import android.content.SharedPreferences;
+import android.widget.RelativeLayout;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -44,7 +45,7 @@ import java.util.Collections;
 public class FriendsFragment extends Fragment {
 
 
-    SharedPreferences sharedPreferences = getActivity().getSharedPreferences("edu.wisc.meetme", Context.MODE_PRIVATE);
+    SharedPreferences sharedPreferences;
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_PARAM1 = "param1";
@@ -89,6 +90,8 @@ public class FriendsFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        sharedPreferences = getActivity().getSharedPreferences("edu.wisc.meetme", Context.MODE_PRIVATE);
         if (getArguments() != null) {
             mParam1 = getArguments().getString(ARG_PARAM1);
             mParam2 = getArguments().getString(ARG_PARAM2);
@@ -102,30 +105,6 @@ public class FriendsFragment extends Fragment {
 
 
 
-        //Set up button and listener to refresh list
-        Button refreshButton = (Button)(getActivity().findViewById(R.id.refreshButton)); //Not too sure if this will work
-        refreshButton.setOnClickListener(new View.OnClickListener() {
-                                             public void onClick(View v) {
-                                                 //Store
-                                                 String[ ] aStr = new String[1] ;
-
-                                                 // fill in string array[0] with phone number from file storage
-                                                 aStr[0] = MainActivity.me.getID();
-
-
-                                                 if (!aStr[0].isEmpty())
-                                                 {
-                                                     //Execute register request
-                                                     httpRefresh hR = new httpRefresh();
-                                                     hR.execute(aStr);
-                                                     refreshFriends();
-                                                 }
-                                             }
-                                         }
-        );
-
-        //When the user gets online, should send a ping to the server asking for list of active friends
-        refreshButton.callOnClick();
     }
 
     protected class httpRefresh extends AsyncTask<String, Void, String> {
@@ -425,7 +404,35 @@ public class FriendsFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_friends, container, false);
+
+        RelativeLayout myRelativeLayout = (RelativeLayout) inflater.inflate(R.layout.fragment_friends, container, false);
+
+        //Set up button and listener to refresh list
+        Button refreshButton = (Button)myRelativeLayout.findViewById(R.id.refreshButton); //Not too sure if this will work
+        refreshButton.setOnClickListener(new View.OnClickListener() {
+                                             public void onClick(View v) {
+                                                 //Store
+                                                 String[ ] aStr = new String[1] ;
+
+                                                 // fill in string array[0] with phone number from file storage
+                                                 aStr[0] = MainActivity.me.getID();
+
+
+                                                 if (!aStr[0].isEmpty())
+                                                 {
+                                                     //Execute register request
+                                                     httpRefresh hR = new httpRefresh();
+                                                     hR.execute(aStr);
+                                                     refreshFriends();
+                                                 }
+                                             }
+                                         }
+        );
+
+        //When the user gets online, should send a ping to the server asking for list of active friends
+        refreshButton.callOnClick();
+
+        return myRelativeLayout;
     }
 
     // TODO: Rename method, update argument and hook method into UI event

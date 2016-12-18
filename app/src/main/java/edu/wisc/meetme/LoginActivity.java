@@ -18,18 +18,20 @@ public class LoginActivity extends Activity {
 
     // Permanent storage, access level, app only
     SharedPreferences sharedPreferences;
-    EditText userName;
-    EditText passWord;
+    String loadUserName;
 
 
     public void goToHome(View view) {
 
-        // Save the data to local memory
-        sharedPreferences.edit().putString("Username", userName.getText().toString()).apply();
-        sharedPreferences.edit().putString("Password", passWord.getText().toString()).apply();
+        if (loadUserName == "") {
+            Toast.makeText(getApplicationContext(), "You don't have a username. Please register.", Toast.LENGTH_LONG).show();
+        } else {
+            // Save the data to local memory
+            Intent i = new Intent(LoginActivity.this, MainActivity.class);
+            startActivity(i);
+        }
 
-        Intent i = new Intent(LoginActivity.this, MainActivity.class);
-        startActivity(i);
+
     }
 
     public void goToRegister(View view) {
@@ -42,17 +44,9 @@ public class LoginActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
 
-
         sharedPreferences = getSharedPreferences("edu.wisc.meetme", Context.MODE_PRIVATE);
-
-        userName = (EditText) findViewById(R.id.userName);
-        passWord = (EditText) findViewById(R.id.passWord);
-
         // Get the data back from local memory
-        String loadUserName = sharedPreferences.getString("Username", ""); // "" menas default value
-        userName.setText(loadUserName);
-        String loadPassWord = sharedPreferences.getString("Username", ""); // "" menas default value
-        passWord.setText(loadPassWord);
+        loadUserName = sharedPreferences.getString("Phone", ""); // "" menas default value
         Toast.makeText(getApplicationContext(), "Welcome to MeetMe!", Toast.LENGTH_LONG).show();
     }
 }

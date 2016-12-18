@@ -58,11 +58,11 @@ public class MainActivity extends AppCompatActivity
         ProfileFragment.OnFragmentInteractionListener {
 
     boolean isAvailable;
-    SharedPreferences sharedPreferences = getSharedPreferences("edu.wisc.meetme", Context.MODE_PRIVATE);
+    SharedPreferences sharedPreferences;
     public static User me;
 
     // user friendly string names of each category
-    private final String[] categories = {
+    public String[] categories = {
             "Afghan",
             "African",
             "Ethiopian",
@@ -147,7 +147,7 @@ public class MainActivity extends AppCompatActivity
     };
 
     // array of category Id's to map in hash table
-    private final String[] categoryIds = {
+    public String[] categoryIds = {
             "503288ae91d4c4b30a586d67", // Afghan
             "4bf58dd8d48988d1c8941735", // African
             "4bf58dd8d48988d10a941735", // Ethiopian
@@ -242,6 +242,7 @@ public class MainActivity extends AppCompatActivity
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
+        sharedPreferences = getSharedPreferences("edu.wisc.meetme", Context.MODE_PRIVATE);
         // Get the data from local memory
         String first = sharedPreferences.getString("FirstName", ""); // "" menas default value
         String last = sharedPreferences.getString("LastName", "");
@@ -249,6 +250,7 @@ public class MainActivity extends AppCompatActivity
         me = new User(id, first, last, false);
 
         // initialize hash table
+        categoryHash = new Hashtable<String, String>();
         for(int i = 0; i < categoryIds.length; i++) {
             categoryHash.put(categories[i], categoryIds[i]);
         }

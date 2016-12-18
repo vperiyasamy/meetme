@@ -18,6 +18,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import org.apache.http.HttpResponse;
@@ -178,28 +179,79 @@ public class MessageFragment extends Fragment {
         sharedPreferences = getActivity().getSharedPreferences("edu.wisc.meetme", Context.MODE_PRIVATE);
         //Get app-user info and create a User object
 
-        Button recommendButton = (Button)(getActivity().findViewById(R.id.recommendButton));
+
+    }
+    // Preferences should be formatted as 1 long string and as follows:
+    // "503288ae91d4c4b30a586d67,0;503288ae91d4c4b30a586d67,1;503288ae91d4c4b30a586d67,-1;503288ae91d4c4b30a586d67,0;503288ae91d4c4b30a586d67,1"
+    //   a. Category ID, then a comma
+    //   b. like(1), dislike(-1) or no preference(0) (int), then semicolon
+    //       - no semicolon at end of big string
+    public String getPrefs(){
+        ArrayList<String> prefs = null;
+        String toReturn = "";
+        try {
+
+            prefs = (ArrayList<String>) ObjectSerializer.deserialize(sharedPreferences.getString("FoodPreference", ObjectSerializer.serialize(new ArrayList<String>())));
+
+        } catch (IOException e) {
+
+            e.printStackTrace();
+
+        }
+        for(int i = 0; i < foodOption.size(); i++){
+                String id = "";
+                String value;
+
+                //get category id from hash table///////////DO WHEN HASH TABLE IS DONE////////
+
+                //Check if the food is in prefs, assign 1 if it is, 0 if not
+                if(prefs.indexOf(foodOption.get(i)) != -1){
+                    value = "1";
+                }
+                else{
+                    value = "0";
+                }
+
+                //add string to line
+                toReturn = toReturn + id + "," + value + ";";
+            //remove semicolon at end of long string
+
+        }
+        toReturn = toReturn.substring(0, toReturn.length() - 1);
+        return toReturn;
+    }
+
+
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
+        // Inflate the layout for this fragment
+
+        RelativeLayout myRelativeLayouet = (RelativeLayout) inflater.inflate(R.layout.fragment_discover, container, false);
+
+
+        Button recommendButton = (Button) myRelativeLayouet.findViewById(R.id.recommendButton);
         recommendButton.setOnClickListener(new View.OnClickListener() {
-                                             public void onClick(View v) {
-                                                 //Store
-                                                 String[ ] aStr = new String[1] ;
+                                               public void onClick(View v) {
+                                                   //Store
+                                                   String[ ] aStr = new String[1] ;
 
-                                                 // fill in string array[0] with phone number from file storage
-                                                 aStr[0] = MainActivity.me.getID();
+                                                   // fill in string array[0] with phone number from file storage
+                                                   aStr[0] = MainActivity.me.getID();
 
 
-                                                 if (!aStr[0].isEmpty())
-                                                 {
-                                                     //Execute register request
-                                                     httpRecommend hR = new httpRecommend();
-                                                     hR.execute(aStr);
-                                                     getRecommendation(v);
-                                                 }
-                                             }
-                                         }
+                                                   if (!aStr[0].isEmpty())
+                                                   {
+                                                       //Execute register request
+                                                       httpRecommend hR = new httpRecommend();
+                                                       hR.execute(aStr);
+                                                       getRecommendation(v);
+                                                   }
+                                               }
+                                           }
         );
 
-        Button availableButton = (Button)(getActivity().findViewById(R.id.availableButton));
+        Button availableButton = (Button)myRelativeLayouet.findViewById(R.id.availableButton);
         availableButton.setOnClickListener(new View.OnClickListener() {
                                                public void onClick(View v) {
                                                    //String array sent with info
@@ -251,53 +303,9 @@ public class MessageFragment extends Fragment {
                                                }
                                            }
         );
-    }
-    // Preferences should be formatted as 1 long string and as follows:
-    // "503288ae91d4c4b30a586d67,0;503288ae91d4c4b30a586d67,1;503288ae91d4c4b30a586d67,-1;503288ae91d4c4b30a586d67,0;503288ae91d4c4b30a586d67,1"
-    //   a. Category ID, then a comma
-    //   b. like(1), dislike(-1) or no preference(0) (int), then semicolon
-    //       - no semicolon at end of big string
-    public String getPrefs(){
-        ArrayList<String> prefs = null;
-        String toReturn = "";
-        try {
-
-            prefs = (ArrayList<String>) ObjectSerializer.deserialize(sharedPreferences.getString("FoodPreference", ObjectSerializer.serialize(new ArrayList<String>())));
-
-        } catch (IOException e) {
-
-            e.printStackTrace();
-
-        }
-        for(int i = 0; i < foodOption.size(); i++){
-                String id = "";
-                String value;
-
-                //get category id from hash table///////////DO WHEN HASH TABLE IS DONE////////
-
-                //Check if the food is in prefs, assign 1 if it is, 0 if not
-                if(prefs.indexOf(foodOption.get(i)) != -1){
-                    value = "1";
-                }
-                else{
-                    value = "0";
-                }
-
-                //add string to line
-                toReturn = toReturn + id + "," + value + ";";
-            //remove semicolon at end of long string
-
-        }
-        toReturn = toReturn.substring(0, toReturn.length() - 1);
-        return toReturn;
-    }
 
 
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_discover, container, false);
+        return myRelativeLayouet;
     }
 
     protected class httpRecommend extends AsyncTask<String, Void, String> {
