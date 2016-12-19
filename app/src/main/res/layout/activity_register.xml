@@ -14,7 +14,7 @@
     <EditText
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:inputType="textPassword"
+        android:inputType="textMultiLine|textEmailAddress"
         android:ems="10"
         android:id="@+id/email"
         android:hint="Enter your email (e.g. john.doe@domain.com)" />

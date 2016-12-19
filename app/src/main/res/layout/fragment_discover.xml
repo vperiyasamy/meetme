@@ -8,30 +8,20 @@
     <!-- TODO: Update blank fragment layout -->
     <TextView
         android:layout_width="match_parent"
-        android:layout_height="379dp"
-        android:text="Discover"
-        android:textSize="30sp"
+        android:text="Home"
+        android:textSize="40dp"
         android:textStyle="normal|bold"
-        android:textAlignment="center" />
+        android:textAlignment="center"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp" />
 
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Set me as Available!"
+        android:text="Set me as Available"
         android:id="@+id/availableButton"
         android:onClick="setAvailable"
-        android:layout_marginBottom="155dp"
-        android:layout_above="@+id/recommendButton"
-        android:layout_centerHorizontal="true" />
-
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Get a Recommendation!"
-        android:id="@+id/recommendButton"
-        android:onClick="getRecommendation"
-        android:layout_marginBottom="107dp"
-        android:layout_alignParentBottom="true"
+        android:layout_marginTop="80dp"
         android:layout_centerHorizontal="true" />
 
     <TextView
@@ -39,13 +29,43 @@
         android:layout_height="wrap_content"
         android:text="Recommended: "
         android:textSize="18sp"
-        android:id="@+id/recommendTitle" />
-    <TextView
+        android:id="@+id/recommendTitle"
+        android:layout_alignTop="@+id/recommendButton"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="77dp" />
+
+    <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:text="Get a Recommendation"
+        android:id="@+id/recommendButton"
+        android:onClick="getRecommendation"
+        android:layout_alignTop="@+id/availableButton"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="81dp" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
         android:text=""
-        android:textSize="18sp"
-        android:id="@+id/restaurantName" />
+        android:textSize="50dp"
+        android:id="@+id/restaurantName"
+        android:layout_marginTop="44dp"
+        android:layout_below="@+id/recommendTitle"
+        android:layout_alignParentStart="true"
+        android:textAlignment="center" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text=""
+        android:id="@+id/restaurantPhone"
+        android:autoLink="phone"
+        android:layout_marginTop="15dp"
+        android:textAlignment="center"
+        android:layout_below="@+id/restaurantName"
+        android:layout_alignParentStart="true"
+        android:textSize="40dp" />
 
 
 </RelativeLayout>

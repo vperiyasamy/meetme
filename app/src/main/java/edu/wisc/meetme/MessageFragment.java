@@ -8,6 +8,7 @@ import android.app.FragmentTransaction;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
+import android.graphics.Color;
 import android.location.Location;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -429,9 +430,11 @@ public class MessageFragment extends Fragment {
 
                 // 5. Latitude
                 aStr[4] = sharedPreferences.getString("Latitude", "");
+                System.out.println("latitude = " + aStr[4]);
 
                 // 6. Longitude
                 aStr[5] = sharedPreferences.getString("Longitude", "");
+                System.out.println("longitude = " + aStr[5]);
 
                 // 7. Preferences
                 String prefs = getPrefs();
@@ -535,6 +538,8 @@ public class MessageFragment extends Fragment {
             nameValuePairs.add(new BasicNameValuePair("email", strs[1]));
             nameValuePairs.add(new BasicNameValuePair("first", strs[2]));
             nameValuePairs.add(new BasicNameValuePair("last", strs[3]));
+            System.out.println(strs[4]);
+            System.out.println(strs[5]);
             nameValuePairs.add(new BasicNameValuePair("lat", strs[4]));
             nameValuePairs.add(new BasicNameValuePair("lon", strs[5]));
             nameValuePairs.add(new BasicNameValuePair("cats", strs[6]));
@@ -577,7 +582,7 @@ public class MessageFragment extends Fragment {
 
             if (res.equalsIgnoreCase("UserAvailable")) {
                 Toast.makeText(getActivity(),
-                        "Availability Set", Toast.LENGTH_SHORT).show();
+                        "You are available!", Toast.LENGTH_SHORT).show();
             }
             else if (res.equalsIgnoreCase("UserNotFound")) {
                 Toast.makeText(getActivity(),
@@ -590,8 +595,6 @@ public class MessageFragment extends Fragment {
 
         }
     }
-
-
 
 
 
@@ -705,17 +708,24 @@ public class MessageFragment extends Fragment {
         //Recommendation info received from server stored in recommendReply
         //Filter through info
         String restaurantName = "";
+        String restaurantPhone= "";
         Location restaurantGPS = null;
+        Double lat;
+        Double lon;
 
         try {
             restaurantName = (String) recommendReply.get(0);
-            restaurantGPS = (Location)recommendReply.get(1);
-
+            restaurantPhone = (String) recommendReply.get(1);
+            lat = (Double)recommendReply.get(2);
+            lon = (Double)recommendReply.get(3);
+            restaurantGPS = new Location("");
+            restaurantGPS.setLatitude(lat);
+            restaurantGPS.setLongitude(lon);
             //Save restaurant location in local storage
             sharedPreferences.edit().putString("RestaurantLat", Double.toString(restaurantGPS.getLatitude())).apply();
             sharedPreferences.edit().putString("RestaurantLong", Double.toString(restaurantGPS.getLongitude())).apply();
 
-        }catch(JSONException e){
+        } catch(JSONException e){
             System.out.println("Error in JSON decoding");
             e.printStackTrace();
         }
@@ -723,7 +733,12 @@ public class MessageFragment extends Fragment {
         //Display info
         TextView t = (TextView)getActivity().findViewById(R.id.restaurantName);
         t.setText(restaurantName);
+        t.setTextColor(Color.rgb((int)(Math.random()*255), (int)(Math.random()*255), (int)(Math.random()*255)));
 
+        TextView p = (TextView)getActivity().findViewById(R.id.restaurantPhone);
+        p.setText(restaurantPhone);
+        p.setTextColor(Color.rgb((int)(Math.random()*255), (int)(Math.random()*255), (int)(Math.random()*255)));
+        Toast.makeText(getActivity(), "You can find this restaurant in the map!", Toast.LENGTH_SHORT).show();
     }
 
     //Button to set self as available. Query server to update user availability
@@ -744,6 +759,7 @@ public class MessageFragment extends Fragment {
 //        updateDialog.show(getFragmentManager(),"updatePrefs");
 
     }
+
 
     /**
      * This interface must be implemented by activities that contain this

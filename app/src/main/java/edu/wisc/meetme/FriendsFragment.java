@@ -7,6 +7,7 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.app.Fragment;
+import android.os.SystemClock;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -143,6 +144,7 @@ public class FriendsFragment extends Fragment {
 
             // Decompose the server's acknowledgement into a JSON array
             try {
+                System.out.println(temp);
                 JSONArray jsonArray = new JSONArray(temp);
                 refreshReply = jsonArray;
                 reply = jsonArray.getString(0);
@@ -162,6 +164,10 @@ public class FriendsFragment extends Fragment {
             if (res.equalsIgnoreCase("User Not Found")) {
                 Toast.makeText(getActivity(),
                         "There was an error refreshing.", Toast.LENGTH_SHORT).show();
+            }
+            else if(res.equalsIgnoreCase("True")) {
+                Toast.makeText(getActivity(),
+                        "You have a new recommendation waiting!", Toast.LENGTH_LONG).show();
             }
             else {
                 refreshFriends();
@@ -187,14 +193,15 @@ public class FriendsFragment extends Fragment {
         //       a. Latitude
         //       b. Longitude
 
+
         //If refreshing on startup, create all new user objects
-        if(startup){
-            for (int i = 0; i < serverList.length();) {
+        if (startup){
+            for (int i = 1; i < serverList.length();) {
                 int datalength = 0;
                 try {
                     System.out.println(i);
                     System.out.println(serverList.getString(i));
-                    String id = (String)serverList.get(i);
+                    String id = (String) serverList.get(i);
                     String[] name = {serverList.getString(i + 1), serverList.getString(i + 2)};
                     boolean active = (boolean)serverList.get(i + 3);//.equals("true");
                     User curr = new User(id, name[0], name[1], active);
@@ -220,7 +227,7 @@ public class FriendsFragment extends Fragment {
         }
         //Otherwise, check whether user is already created, and if so, edit online status.
         else{
-            for(int i = 0; i < serverList.length();){
+            for(int i = 1; i < serverList.length();){
                 int datalength = 0;
                 try {
                     int currindex = 0;

@@ -75,6 +75,8 @@ public class MainActivity extends AppCompatActivity
         String first = sharedPreferences.getString("FirstName", ""); // "" menas default value
         String last = sharedPreferences.getString("LastName", "");
         String id = sharedPreferences.getString("Phone", "");
+        String lat = sharedPreferences.getString("RestaurantLat", "");
+        String lon = sharedPreferences.getString("RestaurantLong", "");
         me = new User(id, first, last, false);
 
 
@@ -169,7 +171,7 @@ public class MainActivity extends AppCompatActivity
             // "tag" is the name of the text form on the webserver
             // "value" is the value that the client is submitting to the server
             // These two are specified by the server. The cilent side program must respect.
-            nameValuePairs.add(new BasicNameValuePair("phone", strs[0]));
+            nameValuePairs.add(new BasicNameValuePair("user", strs[0]));
             nameValuePairs.add(new BasicNameValuePair("value", "false"));
 
 
@@ -210,11 +212,11 @@ public class MainActivity extends AppCompatActivity
 
             if (res.equalsIgnoreCase("Updated")) {
                 Toast.makeText(getApplicationContext(),
-                        "Successfully set inactive", Toast.LENGTH_SHORT).show();
+                        "You are unavailable!", Toast.LENGTH_SHORT).show();
             }
             else if (res.equalsIgnoreCase("Stored")) {
                 Toast.makeText(getApplicationContext(),
-                        "Successfully set inactive", Toast.LENGTH_SHORT).show();
+                        "You are unavailable!", Toast.LENGTH_SHORT).show();
             }
             else {
                 Toast.makeText(getApplicationContext(),

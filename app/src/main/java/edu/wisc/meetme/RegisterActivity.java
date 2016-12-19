@@ -157,6 +157,8 @@ public class RegisterActivity extends Activity {
                 sharedPreferences.edit().putString("Email", ((EditText)findViewById(R.id.email)).getText().toString()).apply();
                 sharedPreferences.edit().putString("FirstName", ((EditText)findViewById(R.id.firstname)).getText().toString()).apply();
                 sharedPreferences.edit().putString("LastName", ((EditText)findViewById(R.id.lastname)).getText().toString()).apply();
+                sharedPreferences.edit().putString("Latitude", "43.071941").apply();
+                sharedPreferences.edit().putString("Longitude", "-89.410203").apply();
                 Intent i = new Intent(RegisterActivity.this, LoginActivity.class);
                 startActivity(i);
             }
