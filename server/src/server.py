@@ -221,6 +221,7 @@ class GetRecommendation(webapp2.RequestHandler):
 			atleast_one = False
 			visited = False
 			name = '' # name of place to return to application
+			phone = '' # phone number of place to return
 			lat = '' # latitude of place
 			lon = '' # longitude of place
 			i = 0 # loop variable
@@ -240,6 +241,7 @@ class GetRecommendation(webapp2.RequestHandler):
 							found = True # exit loop now 
 							visited = True # mark recently visited
 							name = data['response']['venues'][i]['name']
+							phone = data['response']['venues'][i]['contact']['phone']
 							lat = data['response']['venues'][i]['location']['lat']
 							lon = data['response']['venues'][i]['location']['lng']
 					else:
@@ -247,6 +249,7 @@ class GetRecommendation(webapp2.RequestHandler):
 						found = True # exit loop now
 						visited = True # mark recently visited
 						name = data['response']['venues'][i]['name']
+						phone = data['response']['venues'][i]['contact']['phone']
 						lat = data['response']['venues'][i]['location']['lat']
 						lon = data['response']['venues'][i]['location']['lng']
 
@@ -267,6 +270,7 @@ class GetRecommendation(webapp2.RequestHandler):
 							found = True # exit loop now
 							# don't need to update db, because it's already marked recently visited
 							name = data['response']['venues'][i]['name']
+							phone = data['response']['venues'][i]['contact']['phone']
 							lat = data['response']['venues'][i]['location']['lat']
 							lon = data['response']['venues'][i]['location']['lng']
 						else:
@@ -277,7 +281,7 @@ class GetRecommendation(webapp2.RequestHandler):
 					# if we get here, absolutely no restaurants match the search criteria within 1000m
 					returnVal(self, lambda : json.dump(["none"], self.response.out))
 
-			returnVal(self, lambda : json.dump([name, lat, lon], self.response.out))
+			returnVal(self, lambda : json.dump([name, phone, lat, lon], self.response.out))
 			# set recommendation flag for group
 			filename = bucket + '/recommendation.txt'
 			rec_file = gcs.open(filename, 'w', content_type='text/plain')
