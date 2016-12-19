@@ -510,7 +510,7 @@ class RefreshGroup(webapp2.RequestHandler):
 		bucket = '/' + bucket_name
 
 		send_rec = False
-		user = db.GqlQuery("SELECT * FROM ActiveUsers WHERE user = :1", phoneNumber)
+		user = db.GqlQuery("SELECT * FROM ActiveUsers WHERE user = :1", phoneNumber).get()
 		if user.active:
 			filename = bucket + '/recommendation.txt'
 			rec_file = gcs.open(filename, 'r')

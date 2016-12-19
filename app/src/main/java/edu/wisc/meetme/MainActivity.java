@@ -135,14 +135,17 @@ public class MainActivity extends AppCompatActivity
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.utility) {
-            if (!me.isOnline()) {
-                isAvailable = true;
-                Log.i("Available", "You are not currently online");
-                Toast.makeText(getApplicationContext(), "You are not currently available", Toast.LENGTH_SHORT).show();                                                 //Store
+            //Set inactive
+            String[ ] aStr = new String[1] ;
 
-            } else {
+            // fill in string array[0] with phone number from file storage
+            aStr[0] = MainActivity.me.getID();
 
-
+            if (!aStr[0].isEmpty())
+            {
+                //Execute register request
+                httpInactive hI = new httpInactive();
+                hI.execute(aStr);
             }
             return true;
         } else {
@@ -158,7 +161,7 @@ public class MainActivity extends AppCompatActivity
 
             //Construct an HTTP POST
             HttpClient httpclient = new DefaultHttpClient();
-            HttpPost setActive = new HttpPost("http://meetmeece454.appspot.com/setavailable");
+            HttpPost setActive = new HttpPost("http://meetmeece454.appspot.com/setactive");
 
             // Values to be sent from android app to server
             ArrayList<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>();
@@ -167,12 +170,7 @@ public class MainActivity extends AppCompatActivity
             // "value" is the value that the client is submitting to the server
             // These two are specified by the server. The cilent side program must respect.
             nameValuePairs.add(new BasicNameValuePair("phone", strs[0]));
-            nameValuePairs.add(new BasicNameValuePair("email", strs[1]));
-            nameValuePairs.add(new BasicNameValuePair("first", strs[2]));
-            nameValuePairs.add(new BasicNameValuePair("last", strs[3]));
-            nameValuePairs.add(new BasicNameValuePair("lat", strs[4]));
-            nameValuePairs.add(new BasicNameValuePair("lon", strs[5]));
-            nameValuePairs.add(new BasicNameValuePair("cats", strs[6]));
+            nameValuePairs.add(new BasicNameValuePair("value", "false"));
 
 
             try {
@@ -205,6 +203,26 @@ public class MainActivity extends AppCompatActivity
 
             return reply;
         }
+
+        // Process the server's acknowledgement
+        @Override
+        protected void onPostExecute(String res) {
+
+            if (res.equalsIgnoreCase("Updated")) {
+                Toast.makeText(getApplicationContext(),
+                        "Successfully set inactive", Toast.LENGTH_SHORT).show();
+            }
+            else if (res.equalsIgnoreCase("Stored")) {
+                Toast.makeText(getApplicationContext(),
+                        "Successfully set inactive", Toast.LENGTH_SHORT).show();
+            }
+            else {
+                Toast.makeText(getApplicationContext(),
+                        "There was an error setting availability. Please Try Again", Toast.LENGTH_SHORT).show();
+            }
+
+        }
+    }
 
     //Button to set self as available. Query server to update user availability
     //Should send:
