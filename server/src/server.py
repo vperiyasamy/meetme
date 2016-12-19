@@ -241,7 +241,10 @@ class GetRecommendation(webapp2.RequestHandler):
 							found = True # exit loop now 
 							visited = True # mark recently visited
 							name = data['response']['venues'][i]['name']
-							phone = data['response']['venues'][i]['contact']['phone']
+							if 'phone' in data['response']['venues'][i]['contact']:
+								phone = data['response']['venues'][i]['contact']['phone']
+							else:
+								phone = 'No Phone Number Available'
 							lat = data['response']['venues'][i]['location']['lat']
 							lon = data['response']['venues'][i]['location']['lng']
 					else:
@@ -249,7 +252,10 @@ class GetRecommendation(webapp2.RequestHandler):
 						found = True # exit loop now
 						visited = True # mark recently visited
 						name = data['response']['venues'][i]['name']
-						phone = data['response']['venues'][i]['contact']['phone']
+						if 'phone' in data['response']['venues'][i]['contact']:
+							phone = data['response']['venues'][i]['contact']['phone']
+						else:
+							phone = 'No Phone Number Available'
 						lat = data['response']['venues'][i]['location']['lat']
 						lon = data['response']['venues'][i]['location']['lng']
 
@@ -270,7 +276,10 @@ class GetRecommendation(webapp2.RequestHandler):
 							found = True # exit loop now
 							# don't need to update db, because it's already marked recently visited
 							name = data['response']['venues'][i]['name']
-							phone = data['response']['venues'][i]['contact']['phone']
+							if 'phone' in data['response']['venues'][i]['contact']:
+								phone = data['response']['venues'][i]['contact']['phone']
+							else:
+								phone = 'No Phone Number Available'
 							lat = data['response']['venues'][i]['location']['lat']
 							lon = data['response']['venues'][i]['location']['lng']
 						else:
@@ -515,13 +524,16 @@ class RefreshGroup(webapp2.RequestHandler):
 
 		send_rec = "False"
 		user = db.GqlQuery("SELECT * FROM ActiveUsers WHERE user = :1", phoneNumber).get()
-		if user.active:
-			filename = bucket + '/recommendation.txt'
-			rec_file = gcs.open(filename, 'r')
-			yes_or_no = rec_file.readline()
-			if yes_or_no.lower() == 'yes':
-				send_rec = "True"
-			rec_file.close()
+		if user:
+			if user.active:
+				filename = bucket + '/recommendation.txt'
+				rec_file = gcs.open(filename, 'r')
+				yes_or_no = rec_file.readline()
+				if yes_or_no.lower() == 'yes':
+					send_rec = "True"
+				rec_file.close()
+		else:
+			returnVal(self, lambda : json.dump(["User not found"], self.response.out))
 
 
 		group = db.GqlQuery("SELECT * FROM ActiveUsers WHERE user != :1", phoneNumber)
