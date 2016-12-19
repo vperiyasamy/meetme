@@ -657,7 +657,7 @@ public class MessageFragment extends Fragment {
 
             if (res.equalsIgnoreCase("none")) {
                 Toast.makeText(getActivity(),
-                        "There are absolutely no restaurants around your group meeting your preferences", Toast.LENGTH_LONG).show();
+                        "There are absolutely no restaurants around your group meeting your preferences", Toast.LENGTH_SHORT).show();
             }
             else if (res.equalsIgnoreCase("User not found")) {
                 Toast.makeText(getActivity(),

@@ -167,7 +167,7 @@ public class FriendsFragment extends Fragment {
             }
             else if(res.equalsIgnoreCase("True")) {
                 Toast.makeText(getActivity(),
-                        "You have a new recommendation waiting!", Toast.LENGTH_LONG).show();
+                        "You have a new recommendation waiting!", Toast.LENGTH_SHORT).show();
             }
             else {
                 refreshFriends();
