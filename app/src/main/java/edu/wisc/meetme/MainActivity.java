@@ -61,7 +61,6 @@ public class MainActivity extends AppCompatActivity
     SharedPreferences sharedPreferences;
     public static User me;
 
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -75,8 +74,6 @@ public class MainActivity extends AppCompatActivity
         String first = sharedPreferences.getString("FirstName", ""); // "" menas default value
         String last = sharedPreferences.getString("LastName", "");
         String id = sharedPreferences.getString("Phone", "");
-        String lat = sharedPreferences.getString("RestaurantLat", "");
-        String lon = sharedPreferences.getString("RestaurantLong", "");
         me = new User(id, first, last, false);
 
 
@@ -149,6 +146,8 @@ public class MainActivity extends AppCompatActivity
                 httpInactive hI = new httpInactive();
                 hI.execute(aStr);
             }
+            sharedPreferences.edit().putString("RestaurantLat", "").apply();
+            sharedPreferences.edit().putString("RestaurantLong", "").apply();
             return true;
         } else {
             return false;

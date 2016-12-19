@@ -72,11 +72,10 @@ public class RegisterActivity extends Activity {
                                                    //Execute register request
                                                    httpRegister hR = new httpRegister();
                                                    hR.execute(aStr);
-                                               }
-                                               else
-                                               {
+                                               } else {
                                                    // DISPLAY ERROR MESSAGE TO USER THAT FIELDS ARE INCOMPLETE
-                                               	Toast.makeText(getApplicationContext(), "Please fill in all fields before registration", Toast.LENGTH_SHORT).show();
+                                                   Toast.makeText(getApplicationContext(), "Please fill in all fields before registration", Toast.LENGTH_SHORT).show();
+                                                   sharedPreferences.edit().putString("Phone", "").apply();
                                                }
 
                                            }

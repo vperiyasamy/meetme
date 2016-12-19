@@ -23,15 +23,13 @@ public class LoginActivity extends Activity {
 
     public void goToHome(View view) {
 
-        if (loadUserName == "") {
+        if (loadUserName.equals("")) {
             Toast.makeText(getApplicationContext(), "You don't have a username. Please register.", Toast.LENGTH_LONG).show();
         } else {
             // Save the data to local memory
             Intent i = new Intent(LoginActivity.this, MainActivity.class);
             startActivity(i);
         }
-
-
     }
 
     public void goToRegister(View view) {

@@ -166,6 +166,7 @@ public class FriendsFragment extends Fragment {
                         "There was an error refreshing.", Toast.LENGTH_SHORT).show();
             }
             else if(res.equalsIgnoreCase("True")) {
+                refreshFriends();
                 Toast.makeText(getActivity(),
                         "You have a new recommendation waiting!", Toast.LENGTH_SHORT).show();
             }
