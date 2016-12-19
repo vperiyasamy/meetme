@@ -135,15 +135,13 @@ public class MainActivity extends AppCompatActivity
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.utility) {
-            if (!isAvailable) {
+            if (!me.isOnline()) {
                 isAvailable = true;
-                Log.i("Available", "I am available");
-                Toast.makeText(getApplicationContext(), "I am available.", Toast.LENGTH_SHORT).show();                                                 //Store
+                Log.i("Available", "You are not currently online");
+                Toast.makeText(getApplicationContext(), "You are not currently available", Toast.LENGTH_SHORT).show();                                                 //Store
 
             } else {
-                //isAvailable = false;
-                //Toast.makeText(getApplicationContext(), "I am not available.", Toast.LENGTH_SHORT).show();
-                //FriendsFragment.me.setOnline(false);
+
 
             }
             return true;
@@ -152,6 +150,61 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
+    protected class httpInactive extends AsyncTask<String, Void, String> {
+        @Override
+        protected String doInBackground(String... strs) {
+            String reply = null;
+            String temp = ""; //capture acknowledgement from server, if any
+
+            //Construct an HTTP POST
+            HttpClient httpclient = new DefaultHttpClient();
+            HttpPost setActive = new HttpPost("http://meetmeece454.appspot.com/setavailable");
+
+            // Values to be sent from android app to server
+            ArrayList<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>();
+
+            // "tag" is the name of the text form on the webserver
+            // "value" is the value that the client is submitting to the server
+            // These two are specified by the server. The cilent side program must respect.
+            nameValuePairs.add(new BasicNameValuePair("phone", strs[0]));
+            nameValuePairs.add(new BasicNameValuePair("email", strs[1]));
+            nameValuePairs.add(new BasicNameValuePair("first", strs[2]));
+            nameValuePairs.add(new BasicNameValuePair("last", strs[3]));
+            nameValuePairs.add(new BasicNameValuePair("lat", strs[4]));
+            nameValuePairs.add(new BasicNameValuePair("lon", strs[5]));
+            nameValuePairs.add(new BasicNameValuePair("cats", strs[6]));
+
+
+            try {
+                UrlEncodedFormEntity httpEntity = new UrlEncodedFormEntity(nameValuePairs);
+                setActive.setEntity(httpEntity);
+
+                //Execute HTTP POST
+                HttpResponse response = httpclient.execute(setActive);
+                //Capture acknowledgement from server
+                // In this demo app, the server returns "Update" if the tag already exists;
+                // Otherwise, the server returns "New"
+                temp = EntityUtils.toString(response.getEntity());
+            } catch (ClientProtocolException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                System.out.println("HTTP IO Exception.");
+                e.printStackTrace();
+            }
+
+
+            // Decompose the server's acknowledgement into a JSON array
+            try {
+                JSONArray jsonArray = new JSONArray(temp);
+                reply = jsonArray.getString(0);
+
+            } catch (JSONException e) {
+                System.out.println("Error in JSON decoding");
+                e.printStackTrace();
+            }
+
+            return reply;
+        }
 
     //Button to set self as available. Query server to update user availability
     //Should send:
