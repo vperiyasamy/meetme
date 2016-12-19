@@ -29,6 +29,8 @@ MAIN_PAGE_HTML = """\
     <a href="unregisteruser">UnregisterUser </a>
     </br>
     <a href="refreshgroup">RefreshGroup </a>
+    </br>
+    <a href="validateuser">ValidateUser </a>
   </body>
 </html>
 """
@@ -443,14 +445,6 @@ class RegisterUser(webapp2.RequestHandler):
 
 			returnVal(self, lambda : json.dump(["Success"], self.response.out))
 
-		#entry = db.GqlQuery("SELECT * FROM StoredData where tag = :1", tag).get()
-		#if entry:
-		#    returnVal(self, lambda : json.dump(["Update"], self.response.out)) 
-		#else: 
-		#    entry = StoredData(tag = tag, value = value)
-		#    returnVal(self, lambda : json.dump(["Store"], self.response.out)) 
-		#entry.put()
-
 	def post(self):
 		phoneNumber = self.request.get('phone')
 		email = self.request.get('email')
@@ -470,6 +464,37 @@ class RegisterUser(webapp2.RequestHandler):
 	       <p>Last Name<input type="text" name="last" /></p>
 	       <input type="hidden" name="fmt" value="html">
 	       <input type="submit" value="Register a User">
+	    </form></body></html>\n''')
+
+class ValidateUser(webapp2.RequestHandler):
+
+	def register_user(self, phoneNumber):
+		bucket_name = os.environ.get('BUCKET_NAME', app_identity.get_default_gcs_bucket_name())
+
+		bucket = '/' + bucket_name
+		filename = bucket + '/' + phoneNumber + '.txt'
+
+		try:
+			gcs_file = gcs.open(filename,'r')
+			gcs_file.close()
+			returnVal(self, lambda :json.dump(["Registered"], self.response.out))
+
+		except gcs.NotFoundError:
+			returnVal(self, lambda : json.dump(["Unregistered"], self.response.out))
+
+	def post(self):
+		phoneNumber = self.request.get('phone')
+		self.validate_user(phoneNumber)
+
+# this is just for browser test
+	def get(self):
+		self.response.out.write('''
+	    <html><body>
+	    <form action="/validateuser" method="post"
+	          enctype=application/x-www-form-urlencoded>
+	       <p>Phone Number<input type="text" name="phone" /></p>
+	       <input type="hidden" name="fmt" value="html">
+	       <input type="submit" value="Validate User">
 	    </form></body></html>\n''')
 
 class UnregisterUser(webapp2.RequestHandler):
@@ -644,6 +669,7 @@ application = webapp2.WSGIApplication([
 	('/getrecommendation', GetRecommendation),
 	('/setavailable', SetAvailable),
 	('/registeruser', RegisterUser),
+	('/validateuser', ValidateUser),
 	('/unregisteruser', UnregisterUser),
 	('/refreshgroup', RefreshGroup),
 	('/deleteall', DeleteAll)
