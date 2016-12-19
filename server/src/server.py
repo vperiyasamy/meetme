@@ -278,13 +278,11 @@ class GetRecommendation(webapp2.RequestHandler):
 					returnVal(self, lambda : json.dump(["none"], self.response.out))
 
 			returnVal(self, lambda : json.dump([name, lat, lon], self.response.out))
-
-			# lastly, reset all users to inactive
-			group = db.GqlQuery("SELECT * FROM ActiveUsers")
-
-			for person in group:
-				person.active = False
-				person.put()
+			# set recommendation flag for group
+			filename = bucket + '/recommendation.txt'
+			rec_file = gcs.open(filename, 'w', content_type='text/plain')
+			rec_file.write(('yes').encode('utf-8'))
+			rec_file.close()
 
 		except urlfetch.Error:
 			logging.exception('Caught exception fetching url')
@@ -321,11 +319,15 @@ class SetAvailable(webapp2.RequestHandler):
 			returnVal(self, lambda : json.dump(["UserNotFound"], self.response.out))
 
 		bucket_name = os.environ.get('BUCKET_NAME', app_identity.get_default_gcs_bucket_name())
-		#self.response.headers['Content-Type'] = 'text/plain'
-		#self.response.write('Demo GCS Application running from Version: ' + os.environ['CURRENT_VERSION_ID'] + '\n')
-		#self.response.write('Using bucket name: ' + bucket_name + '\n\n')
 
 		bucket = '/' + bucket_name
+
+		# clear recommendation from group if new user is available
+		filename = bucket + '/recommendation.txt'
+		rec_file = gcs.open(filename, 'w', content_type='text/plain')
+		rec_file.write(('no').encode('utf-8'))
+		rec_file.close()
+
 		filename = bucket + '/' + user + '.txt'
 
 		write_retry_params = gcs.RetryParams(backoff_factor=1.1)
@@ -364,6 +366,7 @@ class SetAvailable(webapp2.RequestHandler):
 		# ',' character.
 
 		cats = self.request.get('cats')
+
 		categories = []
 
 		pairs = cats.split(';')
@@ -506,6 +509,16 @@ class RefreshGroup(webapp2.RequestHandler):
 		bucket_name = os.environ.get('BUCKET_NAME', app_identity.get_default_gcs_bucket_name())
 		bucket = '/' + bucket_name
 
+		send_rec = False
+		user = db.GqlQuery("SELECT * FROM ActiveUsers WHERE user = :1", phoneNumber)
+		if user.active:
+			filename = bucket + '/recommendation.txt'
+			rec_file = gcs.open(filename, 'r')
+			yes_or_no = rec_file.readline()
+			if yes_or_no.lower() == 'yes':
+				send_rec = True
+			rec_file.close()
+
 
 		group = db.GqlQuery("SELECT * FROM ActiveUsers WHERE user != :1", phoneNumber)
 
@@ -532,13 +545,10 @@ class RefreshGroup(webapp2.RequestHandler):
 			except gcs.NotFoundError:
 				returnVal(self, lambda : json.dump(["User not found"], self.response.out))
 
+		returnlist.insert(0, send_rec)
+
 		returnVal(self, lambda : json.dump(returnlist, self.response.out))
-		#if entry:
-		#    returnVal(self, lambda : json.dump(["Update"], self.response.out)) 
-		#else: 
-		#    entry = StoredData(tag = tag, value = value)
-		#    returnVal(self, lambda : json.dump(["Store"], self.response.out)) 
-		#entry.put()
+
 
 	def post(self):
 		phoneNumber = self.request.get('phone')
