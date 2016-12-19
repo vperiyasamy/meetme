@@ -509,14 +509,14 @@ class RefreshGroup(webapp2.RequestHandler):
 		bucket_name = os.environ.get('BUCKET_NAME', app_identity.get_default_gcs_bucket_name())
 		bucket = '/' + bucket_name
 
-		send_rec = False
+		send_rec = "False"
 		user = db.GqlQuery("SELECT * FROM ActiveUsers WHERE user = :1", phoneNumber).get()
 		if user.active:
 			filename = bucket + '/recommendation.txt'
 			rec_file = gcs.open(filename, 'r')
 			yes_or_no = rec_file.readline()
 			if yes_or_no.lower() == 'yes':
-				send_rec = True
+				send_rec = "True"
 			rec_file.close()
 
 
