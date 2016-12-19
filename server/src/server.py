@@ -31,20 +31,26 @@ MAIN_PAGE_HTML = """\
     <a href="refreshgroup">RefreshGroup </a>
     </br>
     <a href="validateuser">ValidateUser </a>
+    </br>
+    <a href="deleteall">DeleteAll </a>
   </body>
 </html>
 """
 
+# this db is used to store users and whether they are available
 class ActiveUsers(db.Model):
 	user = db.StringProperty()
 	active = db.BooleanProperty()
 
+#this db is used to store previously chosen restaurants
 class PreviousRecs(db.Model):
 	place = db.StringProperty()
 	visited = db.BooleanProperty()
 
 
-
+# SetActive class is used to toggle the availability status of
+# a user. This is mainly used to clear a user's availability
+# (cancel their participation in the reocmmendation)
 class SetActive(webapp2.RequestHandler):
 
 	def set_active(self, user, active):
@@ -76,9 +82,15 @@ class SetActive(webapp2.RequestHandler):
 	       <input type="submit" value="Set User Active">
 	    </form></body></html>\n''')
    
-
+# GetRecommendation class is used to compute the recommendation using
+# both the geographic midpoint algorithm and the preferences ranking
+# system to generate the proper search parameters input to the
+# Foursquare API. It then processes the returned data and returns
+# the name, phone number, and GPS coordinates to the user
 class GetRecommendation(webapp2.RequestHandler):
 
+	# this function is calculating the geographic midpoint of a
+	# list of latitude longitude pairs
 	def get_midpoint(self, pairs):
 		cartesian = []
 		w = 0
@@ -125,9 +137,27 @@ class GetRecommendation(webapp2.RequestHandler):
 
 		return (lat, lon)
 
+	# this function first finds which users are active, then aggregates their locations to input to the
+	# get_midpoint method. Lastly, it tallies and compute best preference, makes the Foursquare API call,
+	# and processes the data.
 	def get_recommendation(self):
 		bucket_name = os.environ.get('BUCKET_NAME', app_identity.get_default_gcs_bucket_name())
 		bucket = '/' + bucket_name
+
+		# first check if there is an existing recommendation already
+		filename = bucket + '/recommendation.txt'
+		rec_file = gcs.open(filename, 'r')
+		yes_or_no = rec_file.readline()[:-1]
+		if yes_or_no.lower() == 'yes':
+			name = rec_file.readline()[:-1]
+			phone = rec_file.readline()[:-1]
+			lat = float(rec_file.readline()[:-1])
+			lon = float(rec_file.readline()[:-1])
+			returnVal(self, lambda : json.dump([name, phone, lat, lon], self.response.out))
+			rec_file.close()
+			return
+		else:
+			rec_file.close()
 
 
 		group = db.GqlQuery("SELECT * FROM ActiveUsers WHERE active = :1", True)
@@ -181,6 +211,7 @@ class GetRecommendation(webapp2.RequestHandler):
 
 				# loop through user's file for all preferences and their votes on them
 				while line != '':
+					# each line is of the format "<categoryId> <vote>"
 					segments = line.split()
 					category = segments[0]
 					vote = int(segments[1])
@@ -196,16 +227,20 @@ class GetRecommendation(webapp2.RequestHandler):
 		midpoint = self.get_midpoint(coordinates)
 
 		# choose maximum voted categories by votes
-		preferences = sorted(preferences, key=preferences.get, reverse=True)[:10]
+		preferences = sorted(preferences, key=preferences.get, reverse=True)[:1]
 		# below is for choosing only the top choice
 		#category = max(preferences, key=preferences.get)
 
+		# construct the url for the foursquare api search
 		url = 'https://api.foursquare.com/v2/venues/search?v=20161210&ll='
+		# add the location
 		url += str(midpoint[0])
 		url += ','
 		url += str(midpoint[1])
-		url += '&client_id=UGTZZ2JKSHYYCYADYWZ0GRO5C5F0TJOWNTK4JN401AWR444Z&client_secret=EVKPHZ0UXMS1F0PJP5S4UKU4IL0TMHXFWTLEIL3FFBGLNZAF&radius=800&categoryId='
+		# client_id and client_secret registered to our MeetMe app
+		url += '&client_id=UGTZZ2JKSHYYCYADYWZ0GRO5C5F0TJOWNTK4JN401AWR444Z&client_secret=EVKPHZ0UXMS1F0PJP5S4UKU4IL0TMHXFWTLEIL3FFBGLNZAF&radius=5000&categoryId='
 
+		# add each categoryId to search with
 		for category in preferences:
 			url += category
 			url += ','
@@ -213,6 +248,7 @@ class GetRecommendation(webapp2.RequestHandler):
 		url = url[:-1]
 
 		try:
+			# fetch the data
 			result = urlfetch.fetch( url=url, method=urlfetch.GET, headers = {"Content-Type": "application/json"})
 			
 			data = json.loads(result.content)
@@ -268,7 +304,7 @@ class GetRecommendation(webapp2.RequestHandler):
 
 			# no new or not recently visited restaurants were found in entire json dump
 			# however, if we found one already visited, go there
-			except ValueError:
+			except (ValueError, IndexError) as e:
 				if atleast_one:
 					found = False
 					i = 0 # restart search from beginning of json
@@ -291,12 +327,17 @@ class GetRecommendation(webapp2.RequestHandler):
 				else:
 					# if we get here, absolutely no restaurants match the search criteria within 1000m
 					returnVal(self, lambda : json.dump(["none"], self.response.out))
+					return
 
 			returnVal(self, lambda : json.dump([name, phone, lat, lon], self.response.out))
-			# set recommendation flag for group
+			# set recommendation flag for group in file, and save recommendation
 			filename = bucket + '/recommendation.txt'
 			rec_file = gcs.open(filename, 'w', content_type='text/plain')
-			rec_file.write(('yes').encode('utf-8'))
+			rec_file.write(('yes\n').encode('utf-8'))
+			rec_file.write((name + '\n').encode('utf-8'))
+			rec_file.write((phone + '\n').encode('utf-8'))
+			rec_file.write((str(lat) + '\n').encode('utf-8'))
+			rec_file.write((str(lon) + '\n').encode('utf-8'))
 			rec_file.close()
 
 		except urlfetch.Error:
@@ -304,8 +345,6 @@ class GetRecommendation(webapp2.RequestHandler):
 
 
 	def post(self):
-		# https://developers.google.com/appengine/docs/python/tools/webapp/requestclass
-		# pairs = self.request.get('pairs')
 		self.get_recommendation()
 
 	def get(self):
@@ -320,7 +359,10 @@ class GetRecommendation(webapp2.RequestHandler):
 	    </body>
 	    </html>\n''') 
 
-
+# SetAvailable class is used to set a user available as well as aggregate all of
+# their preferences information. Additionally, this will store the user's location
+# in their file system to be retrieved later during the recommendation.
+# Only users who have set themselves available will be processed.
 class SetAvailable(webapp2.RequestHandler):
 
 	def set_available(self, user, email, firstName, lastName, lat, lon, categories):
@@ -337,7 +379,8 @@ class SetAvailable(webapp2.RequestHandler):
 
 		bucket = '/' + bucket_name
 
-		# clear recommendation from group if new user is available
+		# clear recommendation from group if new user is setting themselves available
+		# because we want an updated recommendation then
 		filename = bucket + '/recommendation.txt'
 		rec_file = gcs.open(filename, 'w', content_type='text/plain')
 		rec_file.write(('no').encode('utf-8'))
@@ -347,6 +390,8 @@ class SetAvailable(webapp2.RequestHandler):
 
 		write_retry_params = gcs.RetryParams(backoff_factor=1.1)
 		try:
+			# since files cannot append in google cloud storage file system,
+			# rewrite all the necessary data and append new data (location, categories and votes)
 			gcs_file = gcs.open(filename,'w', content_type='text/plain', retry_params=write_retry_params)
 			gcs_file.write((user + '\n').encode('utf-8'))
 			gcs_file.write((email + '\n').encode('utf-8'))
@@ -355,6 +400,7 @@ class SetAvailable(webapp2.RequestHandler):
 			gcs_file.write((lat + '\n').encode('utf-8'))
 			gcs_file.write((lon + '\n').encode('utf-8'))
 
+			# write data in format "<categoryid> <vote>\n"
 			for category_vote in categories:
 				write_string = category_vote[0] + ' ' + category_vote[1] + '\n'
 				gcs_file.write(write_string.encode('utf-8'))
@@ -367,7 +413,6 @@ class SetAvailable(webapp2.RequestHandler):
 
 
 	def post(self):
-		# https://developers.google.com/appengine/docs/python/tools/webapp/requestclass
 		
 		user = self.request.get('phone')
 		email = self.request.get('email')
@@ -384,6 +429,7 @@ class SetAvailable(webapp2.RequestHandler):
 
 		categories = []
 
+		# process the massive string into each category
 		pairs = cats.split(';')
 		for pair in pairs:
 			segs = pair.split(',')
@@ -392,6 +438,7 @@ class SetAvailable(webapp2.RequestHandler):
 
 		self.set_available(user, email, firstName, lastName, lat, lon, categories)
 
+# this is just for browser test
 	def get(self):
 		self.response.out.write('''
 	    <html><body>
@@ -408,22 +455,19 @@ class SetAvailable(webapp2.RequestHandler):
 	       <input type="submit" value="Set Available">
 	    </form></body></html>\n''')
 
+# RegisterUser class is used to register a user in the system
+# by creating a file for them and entering them into the database
+# these files will be used for validation later
 class RegisterUser(webapp2.RequestHandler):
 
 	def register_user(self, phoneNumber, email, firstName, lastName):
 		bucket_name = os.environ.get('BUCKET_NAME', app_identity.get_default_gcs_bucket_name())
-		#self.response.headers['Content-Type'] = 'text/plain'
-		#self.response.write('Demo GCS Application running from Version: ' + os.environ['CURRENT_VERSION_ID'] + '\n')
-		#self.response.write('Using bucket name: ' + bucket_name + '\n\n')
 
 		bucket = '/' + bucket_name
 		filename = bucket + '/' + phoneNumber + '.txt'
-		#Create a file.
 
 		#The retry_params specified in the open call will override the default
 		#retry params for this particular file handle.
-
-		#self.response.write('Creating file %s\n' % filename)
 
 		write_retry_params = gcs.RetryParams(backoff_factor=1.1)
 		try:
@@ -466,6 +510,10 @@ class RegisterUser(webapp2.RequestHandler):
 	       <input type="submit" value="Register a User">
 	    </form></body></html>\n''')
 
+# ValidateUser class is used to validate a user when they try
+# to log in. This is to ensure that even if they have an account
+# registered locally, if all profiles were cleared by the server
+# this will require them to register again.
 class ValidateUser(webapp2.RequestHandler):
 
 	def register_user(self, phoneNumber):
@@ -497,6 +545,9 @@ class ValidateUser(webapp2.RequestHandler):
 	       <input type="submit" value="Validate User">
 	    </form></body></html>\n''')
 
+# UnregisterUser class is currently not used by the actual application,
+# but for server testing so we can remove certain test cases without wiping
+# the entire server as is done by the DeleteAll class
 class UnregisterUser(webapp2.RequestHandler):
 
 	def unregister_user(self, phoneNumber):
@@ -541,6 +592,10 @@ class UnregisterUser(webapp2.RequestHandler):
 	       <input type="submit" value="Unregister a User">
 	    </form></body></html>\n''')
 
+
+# RefreshGroup class is used to send a complete list of friends back to the user
+# that includes their availability so it can be sorted on the application side.
+# This class also checks if there is a pending recommendation and if so, notifies the user
 class RefreshGroup(webapp2.RequestHandler):
 
 	def refresh_group(self, phoneNumber):
@@ -586,7 +641,7 @@ class RefreshGroup(webapp2.RequestHandler):
 			except gcs.NotFoundError:
 				returnVal(self, lambda : json.dump(["User not found"], self.response.out))
 
-		returnlist.insert(0, send_rec)
+		returnlist.insert(0, send_rec) #insert whether they have a recommendation as the first item in list
 
 		returnVal(self, lambda : json.dump(returnlist, self.response.out))
 
@@ -607,6 +662,9 @@ class RefreshGroup(webapp2.RequestHandler):
 	    </form></body></html>\n''')
 
 
+# DeleteAll class is used to wipe the server for testing purposes.
+# it Iterates through and deletes all files in the system as well as
+# all users from the databases
 class DeleteAll(webapp2.RequestHandler):
 
 	def delete_all(self):
