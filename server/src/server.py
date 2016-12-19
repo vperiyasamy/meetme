@@ -151,9 +151,10 @@ class GetRecommendation(webapp2.RequestHandler):
 		if yes_or_no.lower() == 'yes':
 			name = rec_file.readline()[:-1]
 			phone = rec_file.readline()[:-1]
+			url = rec_file.readline()[:-1]
 			lat = float(rec_file.readline()[:-1])
 			lon = float(rec_file.readline()[:-1])
-			returnVal(self, lambda : json.dump([name, phone, lat, lon], self.response.out))
+			returnVal(self, lambda : json.dump([name, phone, url, lat, lon], self.response.out))
 			rec_file.close()
 			return
 		else:
@@ -238,7 +239,7 @@ class GetRecommendation(webapp2.RequestHandler):
 		url += ','
 		url += str(midpoint[1])
 		# client_id and client_secret registered to our MeetMe app
-		url += '&client_id=UGTZZ2JKSHYYCYADYWZ0GRO5C5F0TJOWNTK4JN401AWR444Z&client_secret=EVKPHZ0UXMS1F0PJP5S4UKU4IL0TMHXFWTLEIL3FFBGLNZAF&radius=5000&categoryId='
+		url += '&client_id=UGTZZ2JKSHYYCYADYWZ0GRO5C5F0TJOWNTK4JN401AWR444Z&client_secret=EVKPHZ0UXMS1F0PJP5S4UKU4IL0TMHXFWTLEIL3FFBGLNZAF&radius=1000&categoryId='
 
 		# add each categoryId to search with
 		for category in preferences:
@@ -260,6 +261,7 @@ class GetRecommendation(webapp2.RequestHandler):
 			visited = False
 			name = '' # name of place to return to application
 			phone = '' # phone number of place to return
+			url = ''
 			lat = '' # latitude of place
 			lon = '' # longitude of place
 			i = 0 # loop variable
@@ -280,9 +282,13 @@ class GetRecommendation(webapp2.RequestHandler):
 							visited = True # mark recently visited
 							name = data['response']['venues'][i]['name']
 							if 'phone' in data['response']['venues'][i]['contact']:
-								phone = data['response']['venues'][i]['contact']['phone']
+								phone = data['response']['venues'][i]['contact']['formattedPhone']
 							else:
 								phone = 'No Phone Number Available'
+							if 'url' in data['response']['venues'][i]:
+								url = data['response']['venues'][i]['url']
+							else:
+								url = 'No URL available'
 							lat = data['response']['venues'][i]['location']['lat']
 							lon = data['response']['venues'][i]['location']['lng']
 					else:
@@ -291,9 +297,13 @@ class GetRecommendation(webapp2.RequestHandler):
 						visited = True # mark recently visited
 						name = data['response']['venues'][i]['name']
 						if 'phone' in data['response']['venues'][i]['contact']:
-							phone = data['response']['venues'][i]['contact']['phone']
+							phone = data['response']['venues'][i]['contact']['formattedPhone']
 						else:
 							phone = 'No Phone Number Available'
+						if 'url' in data['response']['venues'][i]:
+								url = data['response']['venues'][i]['url']
+						else:
+								url = 'No URL available'
 						lat = data['response']['venues'][i]['location']['lat']
 						lon = data['response']['venues'][i]['location']['lng']
 
@@ -315,9 +325,13 @@ class GetRecommendation(webapp2.RequestHandler):
 							# don't need to update db, because it's already marked recently visited
 							name = data['response']['venues'][i]['name']
 							if 'phone' in data['response']['venues'][i]['contact']:
-								phone = data['response']['venues'][i]['contact']['phone']
+								phone = data['response']['venues'][i]['contact']['formattedPhone']
 							else:
 								phone = 'No Phone Number Available'
+							if 'url' in data['response']['venues'][i]:
+								url = data['response']['venues'][i]['url']
+							else:
+								url = 'No URL available'
 							lat = data['response']['venues'][i]['location']['lat']
 							lon = data['response']['venues'][i]['location']['lng']
 						else:
@@ -329,13 +343,14 @@ class GetRecommendation(webapp2.RequestHandler):
 					returnVal(self, lambda : json.dump(["none"], self.response.out))
 					return
 
-			returnVal(self, lambda : json.dump([name, phone, lat, lon], self.response.out))
+			returnVal(self, lambda : json.dump([name, phone, url, lat, lon], self.response.out))
 			# set recommendation flag for group in file, and save recommendation
 			filename = bucket + '/recommendation.txt'
 			rec_file = gcs.open(filename, 'w', content_type='text/plain')
 			rec_file.write(('yes\n').encode('utf-8'))
 			rec_file.write((name + '\n').encode('utf-8'))
 			rec_file.write((phone + '\n').encode('utf-8'))
+			rec_file.write((url + '\n').encode('utf-8'))
 			rec_file.write((str(lat) + '\n').encode('utf-8'))
 			rec_file.write((str(lon) + '\n').encode('utf-8'))
 			rec_file.close()
