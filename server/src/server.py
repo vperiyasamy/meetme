@@ -239,7 +239,7 @@ class GetRecommendation(webapp2.RequestHandler):
 		url += ','
 		url += str(midpoint[1])
 		# client_id and client_secret registered to our MeetMe app
-		url += '&client_id=UGTZZ2JKSHYYCYADYWZ0GRO5C5F0TJOWNTK4JN401AWR444Z&client_secret=EVKPHZ0UXMS1F0PJP5S4UKU4IL0TMHXFWTLEIL3FFBGLNZAF&radius=1000&categoryId='
+		url += '&client_id=UGTZZ2JKSHYYCYADYWZ0GRO5C5F0TJOWNTK4JN401AWR444Z&client_secret=EVKPHZ0UXMS1F0PJP5S4UKU4IL0TMHXFWTLEIL3FFBGLNZAF&radius=3000&categoryId='
 
 		# add each categoryId to search with
 		for category in preferences:
@@ -531,7 +531,7 @@ class RegisterUser(webapp2.RequestHandler):
 # this will require them to register again.
 class ValidateUser(webapp2.RequestHandler):
 
-	def register_user(self, phoneNumber):
+	def validate_user(self, phoneNumber):
 		bucket_name = os.environ.get('BUCKET_NAME', app_identity.get_default_gcs_bucket_name())
 
 		bucket = '/' + bucket_name
