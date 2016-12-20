@@ -30,6 +30,10 @@ import static java.util.Arrays.asList;
  * Use the {@link ProfileFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
+
+
+// THis fragment allows user to select or deselect multiple preference and store the preference into
+    // local memory.
 public class ProfileFragment extends Fragment {
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -87,7 +91,7 @@ public class ProfileFragment extends Fragment {
 
         final SharedPreferences sharedPreferences = getActivity().getSharedPreferences("edu.wisc.meetme", Context.MODE_PRIVATE);
 
-
+        // This arraylist is used to store all the tags of food categories.
        final ArrayList<String> foodOption = new ArrayList<String>(asList(
                "Afghan",
                 "African",
@@ -172,13 +176,11 @@ public class ProfileFragment extends Fragment {
                 "Wings"
        ));
 
-
+        // Display the list view.
         ListView myListView = (ListView) view.findViewById(R.id.foodList);
 
         myListView.setChoiceMode(AbsListView.CHOICE_MODE_MULTIPLE);
 
-
-//        ArrayList<String> myFood = new ArrayList<String>();
         ArrayAdapter<String> listViewAdapater = new ArrayAdapter<String>(
                 getActivity(),
                 android.R.layout.simple_list_item_checked,
@@ -186,6 +188,7 @@ public class ProfileFragment extends Fragment {
         );
         myListView.setAdapter(listViewAdapater);
 
+        // If the list item is select or deselect, update the arraylist.
         final ArrayList<String> rememberFood = new ArrayList<>();
 
         myListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -216,7 +219,7 @@ public class ProfileFragment extends Fragment {
 
 
 
-
+        // Load the arraylist from memory.
         ArrayList<String> loadFood = new ArrayList<>();
 
         try {

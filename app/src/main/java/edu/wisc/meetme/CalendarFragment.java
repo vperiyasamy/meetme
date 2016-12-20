@@ -17,6 +17,13 @@ import android.view.ViewGroup;
  * Use the {@link CalendarFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
+
+
+/**
+ * This fragment is used to store events on date basis, but since we didn't have enough time, we left
+ * it to show the current location instead.
+ */
+
 public class CalendarFragment extends Fragment {
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER

@@ -52,6 +52,10 @@ import static java.util.Arrays.asList;
  * Use the {@link MessageFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
+
+// This fragment is actually the main fragment where the user sets himself or herself as availabl
+    // and receive a recommended restaurant.
+
 public class MessageFragment extends Fragment {
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER

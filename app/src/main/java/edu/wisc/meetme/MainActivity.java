@@ -50,6 +50,9 @@ import java.util.ArrayList;
 
 import static edu.wisc.meetme.R.layout.activity_main;
 
+
+// The main activity is the holder of the navigation drawer fragments. It controls all the layout
+// of the drawer such as the menu and corner buttons.
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener,
         CalendarFragment.OnFragmentInteractionListener,
@@ -235,7 +238,7 @@ public class MainActivity extends AppCompatActivity
         // Handle navigation view item clicks here.
 
         FragmentManager manager = getFragmentManager();
-
+        // THis is where the user can tap on the menu and go to different fragments.
         int id = item.getItemId();
 
         if (id == R.id.nav_camera) {

@@ -14,6 +14,8 @@ import java.io.ObjectOutputStream;
 import java.io.Serializable;
 
 
+// This is copied directly from Oracle. This is used to store and save an arraylist in local memory.
+
 public class ObjectSerializer {
 
 

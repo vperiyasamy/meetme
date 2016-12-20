@@ -48,6 +48,12 @@ import java.util.Collections;
  */
 
 
+/**
+ * This fragment is used to update the list of online and offline friends from the server.
+ */
+
+
+
 public class FriendsFragment extends Fragment {
 
 

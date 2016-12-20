@@ -46,6 +46,8 @@ import android.view.inputmethod.EditorInfo;
  * populated by Vish 11/30/16
  */
 
+
+// This activity allows users to regisger new username in the server.
 public class RegisterActivity extends Activity {
 
     SharedPreferences sharedPreferences;

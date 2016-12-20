@@ -8,6 +8,8 @@ import android.widget.TextView;
 
 import org.w3c.dom.Text;
 
+
+// THis activity is initially used to test the profile, it even has a complex view.
 public class ProfileActivity extends Activity {
 
 
@@ -22,17 +24,5 @@ public class ProfileActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_profile);
 
-//        Intent intent = getIntent();
-//
-////        if (intent.getStringExtra(ChangeID.ID_MESSAGE) != null) {
-//            String idMessage = intent.getStringExtra(ChangeID.ID_MESSAGE);
-//            userID.setText(idMessage);
-////        } else if (intent.getStringExtra(ChangePhone.PHONE_MESSAGE) != null) {
-//            String phoneMessage = intent.getStringExtra(ChangePhone.PHONE_MESSAGE);
-//            phoneNumber.setText(phoneMessage);
-////        } else {
-//            String interestMessage = intent.getStringExtra(ChangeInterest.INTEREST_MESSAGE);
-//            interests.setText(interestMessage);
-////        }
     }
 }

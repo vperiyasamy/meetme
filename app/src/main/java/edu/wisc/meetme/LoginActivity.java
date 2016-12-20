@@ -30,6 +30,9 @@ import java.util.ArrayList;
  * Created by Yaphet on 11/12/16.
  */
 
+
+
+// THis activity is used to verify if the user is registered and then log into the main activity.
 public class LoginActivity extends Activity {
 
 
@@ -37,7 +40,7 @@ public class LoginActivity extends Activity {
     SharedPreferences sharedPreferences;
     String loadUserName;
 
-
+    // If the username is empty, prompt error message, otherwise go to the main activity.
     public void goToHome() {
 
         if (loadUserName.equals("")) {
@@ -49,6 +52,7 @@ public class LoginActivity extends Activity {
         }
     }
 
+    // Go to the register activity.
     public void goToRegister(View view) {
         Intent i = new Intent(LoginActivity.this, RegisterActivity.class);
         startActivity(i);

@@ -48,6 +48,12 @@ import java.util.Locale;
  * Created by Yaphet on 12/10/16.
  */
 
+/**
+ * This fragment is used to display user's and restaurant's location and create a route by tapping
+ * the let's go button.
+ */
+
+
 public class GmapFragment extends Fragment implements OnMapReadyCallback {
     // Initialize the global variables.
     private GoogleMap mMap;
@@ -157,7 +163,7 @@ public class GmapFragment extends Fragment implements OnMapReadyCallback {
                     markers.add(mMap.addMarker(new MarkerOptions().position(userLocation).title("Your Location").icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE))));
                     markers.add(mMap.addMarker(new MarkerOptions().position(restaurantLocation).title("Restaurant Location").icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED))));
 
-
+                    // Created to display multiple markers on the map.
                     LatLngBounds.Builder builder = new LatLngBounds.Builder();
                     for (Marker marker : markers) {
                         builder.include(marker.getPosition());
@@ -261,6 +267,7 @@ public class GmapFragment extends Fragment implements OnMapReadyCallback {
                 // assign a default location to show on the map. When the user moves, the current location
                 // will update.
                 if (lastKnownLocation == null) {
+                    // If the restaurant is not found, only display the user location.
                     latestLat = Double.toString(43.071941);
                     latestLon = Double.toString(-89.410203);
                     if (restaurantLat.equals("") || restaurantLon.equals("")) {
@@ -274,6 +281,7 @@ public class GmapFragment extends Fragment implements OnMapReadyCallback {
 
 
                     } else {
+                        // Display both user's and restaurant's location on the map.
                         LatLng userLocation = new LatLng(Double.parseDouble(latestLat), Double.parseDouble(latestLon));
                         LatLng restaurantLocation = new LatLng(Double.parseDouble(restaurantLat), Double.parseDouble(restaurantLon));
                         markers.add(mMap.addMarker(new MarkerOptions().position(userLocation).title("Your Location").icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE))));
@@ -291,13 +299,7 @@ public class GmapFragment extends Fragment implements OnMapReadyCallback {
 
                         locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, locationListener);
 
-//                    LatLng restaurantLocation = new LatLng(43.051798, -89.325275);
-//                    mMap.addMarker(new MarkerOptions().position(restaurantLocation).title("Your Location").icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE)));
-//                    mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(userLocation, 15));
-//                    locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, locationListener);
-
                         // Store the current user location to the local memory.
-
 
                         sharedPreferences.edit().putString("Latitude", latestLat).apply();
                         sharedPreferences.edit().putString("Longitude", latestLon).apply();
@@ -341,6 +343,7 @@ public class GmapFragment extends Fragment implements OnMapReadyCallback {
                     }
 
                 } else {
+                    // If the restaurant is not found, only display the user location.
                     latestLat = Double.toString(lastKnownLocation.getLatitude());
                     latestLon = Double.toString(lastKnownLocation.getLongitude());
                     if (restaurantLat.equals("") || restaurantLon.equals("")) {
@@ -357,7 +360,7 @@ public class GmapFragment extends Fragment implements OnMapReadyCallback {
                         sharedPreferences.edit().putString("Latitude", latestLat).apply();
                         sharedPreferences.edit().putString("Longitude", latestLon).apply();
                     } else {
-
+                        // Display both user's and restaurant's location on the map.
                         LatLng userLocation = new LatLng(Double.parseDouble(latestLat), Double.parseDouble(latestLon));
 
                         LatLng restaurantLocation = new LatLng(Double.parseDouble(restaurantLat), Double.parseDouble(restaurantLon));
