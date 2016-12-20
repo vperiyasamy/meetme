@@ -106,6 +106,8 @@ public class FriendsFragment extends Fragment {
 
     }
 
+    //AsyncTask that sends a system call to the server
+    // when the user wants to refresh the friends lists
     protected class httpRefresh extends AsyncTask<String, Void, String> {
         @Override
         protected String doInBackground(String... strs) {
@@ -140,7 +142,8 @@ public class FriendsFragment extends Fragment {
             }
 
 
-            // Decompose the server's acknowledgement into a JSON array
+            // Decompose the server's reply into a JSON array,
+            // which is stored in a local variable
             try {
                 System.out.println(temp);
                 JSONArray jsonArray = new JSONArray(temp);
@@ -177,7 +180,8 @@ public class FriendsFragment extends Fragment {
         }
     }
 
-    //Method to refresh the active friends list. Gets updated list from server query
+    //Method to update the active friends list.
+    // Accesses stored server reply to get update list
     public void refreshFriends(){
         JSONArray serverList;
 
@@ -327,7 +331,7 @@ public class FriendsFragment extends Fragment {
         }
 
 
-        online = gpsSort(online);
+        online = alphaSort(online);
         offline = alphaSort(offline);
         updateNames();
 
@@ -347,66 +351,6 @@ public class FriendsFragment extends Fragment {
         }
         offlineAdapter.notifyDataSetChanged();
     }
-
-    //Sorts the given list based on distance from app-user
-    //Not implemented right now because other users' locations not stored over server.
-    private ArrayList<User> gpsSort(ArrayList<User> users){
-        ArrayList<User> sortedList = new ArrayList<User>();
-        double udis, qdis;
-        boolean uadded;
-        double melat = Double.parseDouble(sharedPreferences.getString("Latitude", ""));
-        double melong = Double.parseDouble(sharedPreferences.getString("Longitude", ""));
-        MainActivity.me.setlocation(melat, melong);
-        for(User u: users){
-            uadded = false;
-            if(sortedList.size() == 0){
-                sortedList.add(u);
-            }
-            else {
-                //compare u's distance from user with the distances within sortedList
-                for (User q : sortedList) {
-                    Location uloc = u.getLocation();
-                    Location meloc = MainActivity.me.getLocation();
-                    Location qloc = q.getLocation();
-                    //Calculate distance between friends and user.
-                    udis = getDistanceFromLatLonInKm(uloc.getLatitude(), uloc.getLongitude(),
-                            meloc.getLatitude(), meloc.getLongitude());
-                    qdis = getDistanceFromLatLonInKm(qloc.getLatitude(), qloc.getLongitude(),
-                            meloc.getLatitude(), meloc.getLongitude());
-
-                    //If u's distance is less than q's, insert u before q in the sortedList.
-                    if(udis < qdis){
-                        sortedList.add(sortedList.indexOf(q),u);
-                        uadded = true;
-                        break;
-                    }
-                }
-                //If u's distance wasn't less than any user within sortedList, just add to end.
-                if(!uadded)
-                    sortedList.add(u);
-            }
-        }
-        return sortedList;
-    }
-
-    public double getDistanceFromLatLonInKm(double lat1,double lon1, double lat2, double lon2) {
-        int R = 6371; // Radius of the earth in km
-        double dLat = deg2rad(lat2-lat1);  // deg2rad below
-        double dLon = deg2rad(lon2-lon1);
-        double a =
-                Math.sin(dLat/2) * Math.sin(dLat/2) +
-                        Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) *
-                                Math.sin(dLon/2) * Math.sin(dLon/2)
-                ;
-        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-        double d = R * c; // Distance in km
-        return d;
-    }
-
-    public double deg2rad(double deg) {
-        return deg * (Math.PI/180);
-    }
-
 
     //Sorts friends alphabetically by first name
     private ArrayList<User> alphaSort(ArrayList<User> users){
@@ -440,21 +384,16 @@ public class FriendsFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
-
-
 
 
         RelativeLayout myRelativeLayout = (RelativeLayout) inflater.inflate(R.layout.fragment_friends, container, false);
 
-
+        //initialize the arraylists to hold online and offline users
         onlineNames = new ArrayList<String>();
         offlineNames = new ArrayList<String>();
 
+        //Set startup to be true, since the app is just starting up.
         startup = true;
-
-
-
 
 
         //Set up button and listener to refresh list
@@ -470,7 +409,7 @@ public class FriendsFragment extends Fragment {
 
                                                  if (!aStr[0].isEmpty())
                                                  {
-                                                     //Execute register request
+                                                     //Execute refresh request
                                                      httpRefresh hR = new httpRefresh();
                                                      hR.execute(aStr);
                                                  }
@@ -481,13 +420,14 @@ public class FriendsFragment extends Fragment {
 
 
 
-        //When the user gets online, should send a ping to the server asking for list of active friends
+        //When the user opens the app, should call the onclick to refresh the list of friends
         refreshButton.callOnClick();
 
+        //Link the ListViews with the corresponding arraylists using the array adapters
         onlineAdapter = new ArrayAdapter<String>(getActivity(), android.R.layout.simple_list_item_1, onlineNames);
         offlineAdapter = new ArrayAdapter<String>(getActivity(), android.R.layout.simple_list_item_1, offlineNames);
 
-        //Get app-user info and create a User object
+        //Instantiate the listviews and link up the adapters
         ListView friendActiveList = (ListView) myRelativeLayout.findViewById(R.id.friendsActive);
         ListView friendOfflineList = (ListView) myRelativeLayout.findViewById(R.id.friendsOffline);
 

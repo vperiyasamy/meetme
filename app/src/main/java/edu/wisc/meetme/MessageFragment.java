@@ -507,6 +507,7 @@ public class MessageFragment extends Fragment {
     public String getPrefs(){
         ArrayList<String> prefs = new ArrayList<String>();
         String toReturn = "";
+        //Get the app-user's preferences from local memory
         try {
 
             prefs = (ArrayList<String>) ObjectSerializer.deserialize(sharedPreferences.getString("FoodPreference", ObjectSerializer.serialize(new ArrayList<String>())));
@@ -516,6 +517,8 @@ public class MessageFragment extends Fragment {
             e.printStackTrace();
 
         }
+        //Check through the list of food categories,
+        // if that category is in preferences, that means the user selected it as a preference
         for(String food : foodOption){
             String id = "";
             String value;
@@ -536,6 +539,7 @@ public class MessageFragment extends Fragment {
             //remove semicolon at end of long string
 
         }
+        //Get rid of unnecessary semicolon at end of long string
         toReturn = toReturn.substring(0, toReturn.length() - 1);
         return toReturn;
     }
@@ -576,8 +580,6 @@ public class MessageFragment extends Fragment {
                 //Execute HTTP POST
                 HttpResponse response = httpclient.execute(setActive);
                 //Capture acknowledgement from server
-                // In this demo app, the server returns "Update" if the tag already exists;
-                // Otherwise, the server returns "New"
                 temp = EntityUtils.toString(response.getEntity());
             } catch (ClientProtocolException e) {
                 e.printStackTrace();
@@ -648,8 +650,6 @@ public class MessageFragment extends Fragment {
                 //Execute HTTP POST
                 HttpResponse response = httpclient.execute(getRecommend);
                 //Capture acknowledgement from server
-                // In this demo app, the server returns "Update" if the tag already exists;
-                // Otherwise, the server returns "New"
                 temp = EntityUtils.toString(response.getEntity());
             } catch (ClientProtocolException e) {
                 e.printStackTrace();
