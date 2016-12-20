@@ -131,8 +131,6 @@ public class FriendsFragment extends Fragment {
                 //Execute HTTP POST
                 HttpResponse response = httpclient.execute(refreshUser);
                 //Capture acknowledgement from server
-                // In this demo app, the server returns "Update" if the tag already exists;
-                // Otherwise, the server returns "New"
                 temp = EntityUtils.toString(response.getEntity());
             } catch (ClientProtocolException e) {
                 e.printStackTrace();
@@ -179,13 +177,14 @@ public class FriendsFragment extends Fragment {
         }
     }
 
-    //Method to refresh the active friends list. Should ping server for updated list.
+    //Method to refresh the active friends list. Gets updated list from server query
     public void refreshFriends(){
         JSONArray serverList;
-        //Call to server here
-        //Use main user's id/phone number, make HTTP request, getting back a JSON
+
+        //Grab JSON generated from server request
         serverList = refreshReply;
-        //Returns JSONArray where every fourth element are
+        //JSONArray filled with data.
+        // Depending on if user is active or inactive, size of data block is 4 or 6 entries.
         // 1. ID (phone number),
         // 2. First Name,
         // 3. Last Name,
@@ -200,12 +199,12 @@ public class FriendsFragment extends Fragment {
             for (int i = 1; i < serverList.length();) {
                 int datalength = 0;
                 try {
-                    System.out.println(i);
-                    System.out.println(serverList.getString(i));
+                    //Grab data from JSONArray and create new user objects
                     String id = (String) serverList.get(i);
                     String[] name = {serverList.getString(i + 1), serverList.getString(i + 2)};
                     boolean active = (boolean)serverList.get(i + 3);//.equals("true");
                     User curr = new User(id, name[0], name[1], active);
+                    //If user is active, grab extra two strings and put user in online list
                     if(active){
                         double lat = Double.parseDouble(serverList.getString(i + 4));
                         double lon = Double.parseDouble(serverList.getString(i + 5));
@@ -213,17 +212,21 @@ public class FriendsFragment extends Fragment {
                         online.add(curr);
                         datalength = 6;
                     }
+                    //Else, put user in offline list
                     else{
                         offline.add(curr);
                         datalength = 4;
                     }
+                    //Add user to allFriends either way
                     allFriends.add(curr);
                 } catch (JSONException e) {
                     System.out.println("Error in JSON decoding");
                     e.printStackTrace();
                 }
+                //Increment index based on how large the data block was.
                 i+= datalength;
             }
+            //Now no longer startup, so change relevant boolean
             startup = false;
         }
         //Otherwise, check whether user is already created, and if so, edit online status.
@@ -231,10 +234,13 @@ public class FriendsFragment extends Fragment {
             for(int i = 1; i < serverList.length();){
                 int datalength = 0;
                 try {
+                    //Grab data from JSONArray
                     int currindex = 0;
                     String id = (String) serverList.get(i);
                     String[] name = {serverList.getString(i + 1), serverList.getString(i + 2)};
                     boolean active = (boolean) serverList.get(i + 3);
+                    //Check whether user is already created,
+                    // If they exist, store the index for easier reference later.
                     boolean usercreated = false;
                     for(int j = 0; j < allFriends.size(); j++){
                         if(id.equals(allFriends.get(j).getID())){
@@ -242,9 +248,11 @@ public class FriendsFragment extends Fragment {
                             currindex = j;
                         }
                     }
-                    //If the user isn't already created, add them to the correct lists
+                    //If the user isn't already created,
+                    // create new user object and add them to the correct lists
                     if(!usercreated){
                         User curr = new User(id, name[0], name[1], active);
+                        //If active, get the two extra strings and add to online list
                         if(active){
                             double lat = Double.parseDouble(serverList.getString(i + 4));
                             double lon = Double.parseDouble(serverList.getString(i + 5));
@@ -252,10 +260,12 @@ public class FriendsFragment extends Fragment {
                             online.add(curr);
                             datalength = 6;
                         }
+                        //Else just add to offline list and set datalength to 4
                         else{
                             offline.add(curr);
                             datalength = 4;
                         }
+                        //Add to allFriends list either way
                         allFriends.add(curr);
                     }
                     //If the user is created, edit their online status if needed and move to correct list
@@ -264,7 +274,8 @@ public class FriendsFragment extends Fragment {
                         boolean lastState = curr.isOnline();
                         //Check if the user's last online status matches the current online status
                         if(lastState != active){
-                            //If lastState was online, need to remove user from online friends and place them in offline friends
+                            //If lastState was online,
+                            // need to remove user from online friends and place in offline friends
                             if(lastState){
                                 for(User user : online){
                                     if(user.getID().equals(curr.getID())){
@@ -276,6 +287,8 @@ public class FriendsFragment extends Fragment {
                                 }
                             }
                             //Similarly, if last status was offline, need to move to online list
+                            // Also, since now the user is active, need to grab extra strings
+                            //   and adjust datalength accordingly
                             else{
                                 for(User user : offline){
                                     if(user.getID().equals(curr.getID())){
@@ -290,6 +303,8 @@ public class FriendsFragment extends Fragment {
                                 }
                             }
                         }
+                        //If the user's online status is same as last,
+                        // just need to update location data if they are online
                         else{
                             if(active){
                                 double lat = Double.parseDouble(serverList.getString(i + 4));
@@ -312,7 +327,7 @@ public class FriendsFragment extends Fragment {
         }
 
 
-        online = alphaSort(online);
+        online = gpsSort(online);
         offline = alphaSort(offline);
         updateNames();
 
@@ -353,12 +368,11 @@ public class FriendsFragment extends Fragment {
                     Location uloc = u.getLocation();
                     Location meloc = MainActivity.me.getLocation();
                     Location qloc = q.getLocation();
-                    //Once gps is properly coded, will have to change how distance is calculated///
+                    //Calculate distance between friends and user.
                     udis = getDistanceFromLatLonInKm(uloc.getLatitude(), uloc.getLongitude(),
                             meloc.getLatitude(), meloc.getLongitude());
                     qdis = getDistanceFromLatLonInKm(qloc.getLatitude(), qloc.getLongitude(),
                             meloc.getLatitude(), meloc.getLongitude());
-                    ///////////////////////////////////////////////////////////////////////////////
 
                     //If u's distance is less than q's, insert u before q in the sortedList.
                     if(udis < qdis){
@@ -470,8 +484,6 @@ public class FriendsFragment extends Fragment {
         //When the user gets online, should send a ping to the server asking for list of active friends
         refreshButton.callOnClick();
 
-        System.out.println("!!!!!!!!!!!");
-
         onlineAdapter = new ArrayAdapter<String>(getActivity(), android.R.layout.simple_list_item_1, onlineNames);
         offlineAdapter = new ArrayAdapter<String>(getActivity(), android.R.layout.simple_list_item_1, offlineNames);
 
@@ -485,7 +497,6 @@ public class FriendsFragment extends Fragment {
         friendActiveList.setAdapter(onlineAdapter);
         friendOfflineList.setAdapter(offlineAdapter);
 
-        System.out.println("??????????????");
         return myRelativeLayout;
     }
 
