@@ -66,91 +66,6 @@ public class MessageFragment extends Fragment {
     TextView p;
     TextView u;
 
-// user friendly string names of each category
-//    public String[] categories = {
-//            "Afghan",
-//            "African",
-//            "Ethiopian",
-//            "American",
-//            "Asian",
-//            "Burmese",
-//            "Cambodian",
-//            "Chinese",
-//            "Cantoness",
-//            "Dim Sum",
-//            "Fujian",
-//            "Hunan",
-//            "Peking Duck",
-//            "Shanghai",
-//            "Szechuan",
-//            "Taiwanese",
-//            "Filipino",
-//            "Himalayan",
-//            "Hotpot",
-//            "Indonesian",
-//            "Japanese",
-//            "Ramen",
-//            "Soba",
-//            "Sushi",
-//            "Udon",
-//            "Korean",
-//            "Malay",
-//            "Mongolian",
-//            "Noodle House",
-//            "Thai",
-//            "Tibetan",
-//            "Vietnamese",
-//            "Australian",
-//            "BBQ",
-//            "Bakery",
-//            "Breakfast",
-//            "Bubble Tea",
-//            "Buffet",
-//            "Burgers",
-//            "Cajun/Creole",
-//            "Caribbean",
-//            "Coffee",
-//            "Creperie",
-//            "Desserts",
-//            "Frozen Yogurt",
-//            "Ice Cream",
-//            "Diner",
-//            "Donuts",
-//            "English",
-//            "Falafel",
-//            "Fast Food",
-//            "Food Truck",
-//            "French",
-//            "Fried Chicken",
-//            "German",
-//            "Greek",
-//            "Hot Dogs",
-//            "Indian",
-//            "North Indian",
-//            "South Indian",
-//            "Irish",
-//            "Italian",
-//            "Latin American",
-//            "Mac & Cheese",
-//            "Mediterranean",
-//            "Mexican",
-//            "Burritos",
-//            "Tacos",
-//            "Tex-Mex",
-//            "Middle Eastern",
-//            "Pizza",
-//            "Portuguese",
-//            "Poutine",
-//            "Sandwiches",
-//            "Seafood",
-//            "Southern/Soul",
-//            "Spanish",
-//            "Sri Lankan",
-//            "Steakhouse",
-//            "Vegetarian/Vegan",
-//            "Wings"
-//    };
-
     // array of category Id's to map in hash table
     public String[] categoryIds = {
             "503288ae91d4c4b30a586d67", // Afghan
@@ -399,6 +314,7 @@ public class MessageFragment extends Fragment {
             categoryHash.put(foodOption.get(i), categoryIds[i]);
         }
 
+        //Button that initiates server call to get a recommendation
         Button recommendButton = (Button) myRelativeLayout.findViewById(R.id.recommendButton);
         recommendButton.setOnClickListener(new View.OnClickListener() {
                                              public void onClick(View v) {
@@ -420,6 +336,7 @@ public class MessageFragment extends Fragment {
                                          }
         );
 
+        //Button to initiate server call to set current user as available.
         Button availableButton = (Button) myRelativeLayout.findViewById(R.id.availableButton);
         availableButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
@@ -436,7 +353,7 @@ public class MessageFragment extends Fragment {
                 // 7. 1 long string
                 // "503288ae91d4c4b30a586d67,0;503288ae91d4c4b30a586d67,1;503288ae91d4c4b30a586d67,-1;503288ae91d4c4b30a586d67,0;503288ae91d4c4b30a586d67,1"
                 //   a. Category IDs, then a comma
-                //   b. like(1), dislike(-1) or no preference(0) (int), then semicolon
+                //   b. like(1), or no preference(0) (int), then semicolon
                 //       - no semicolon at end of big string
 
 
@@ -463,11 +380,10 @@ public class MessageFragment extends Fragment {
                 // 7. Preferences
                 String prefs = getPrefs();
                 aStr[6] = prefs;
-                System.out.println(prefs);
 
                 if (!aStr[0].isEmpty())
                 {
-                    //Execute register request
+                    //Execute request to set as available
                     httpActive hR = new httpActive();
                     hR.execute(aStr);
 
@@ -480,7 +396,7 @@ public class MessageFragment extends Fragment {
     }
 
 
-    //Button to set self as available. Query server to update user availability
+    //Method to format preferences into one large string to send to server
     //Should send:
     // 1. Phone number
     // 2. Email
@@ -488,22 +404,12 @@ public class MessageFragment extends Fragment {
     // 4. Last name
     // 5. Latitude
     // 6. Longitude
-    // 7. 17 strings (preferences package), revise later
-
-
+    // 7. 1 long string
     // Preferences should be formatted as 1 long string and as follows:
     // "503288ae91d4c4b30a586d67,0;503288ae91d4c4b30a586d67,1;503288ae91d4c4b30a586d67,-1;503288ae91d4c4b30a586d67,0;503288ae91d4c4b30a586d67,1"
     //   a. Category ID, then a comma
-    //   b. like(1), dislike(-1) or no preference(0) (int), then semicolon
+    //   b. like(1), or no preference(0) (int), then semicolon
     //       - no semicolon at end of big string
-
-
-
-
-
-
-
-
     public String getPrefs(){
         ArrayList<String> prefs = new ArrayList<String>();
         String toReturn = "";
@@ -546,6 +452,7 @@ public class MessageFragment extends Fragment {
 
 
 
+    //AsyncTask to query server to set User as active
     protected class httpActive extends AsyncTask<String, Void, String> {
         @Override
         protected String doInBackground(String... strs) {
@@ -624,7 +531,7 @@ public class MessageFragment extends Fragment {
 
 
 
-
+    //AsyncTask to query server to get recommended restaurant
     protected class httpRecommend extends AsyncTask<String, Void, String> {
         @Override
         protected String doInBackground(String... strs) {
@@ -659,10 +566,9 @@ public class MessageFragment extends Fragment {
             }
 
 
-            // Decompose the server's acknowledgement into a JSON array
+            // Decompose the server's reply into a JSON array,
+            // and store in local memory
             try {
-                System.out.println(temp);
-                System.out.println(temp.length());
                 JSONArray jsonArray = new JSONArray(temp);
                 recommendReply = jsonArray;
                 reply = jsonArray.getString(0);
@@ -724,10 +630,11 @@ public class MessageFragment extends Fragment {
         mListener = null;
     }
 
-    //Queries server for recommendation, once receives info, displays popup with info.
+    //Parses server reply to get restaurant info
     //Query should return:
     // 1. Name of restaurant
-    // 2. Location
+    // 2. Latitude
+    // 3. Longitude
     public void getRecommendation(){
         //Recommendation info received from server stored in recommendReply
         //Filter through info
@@ -756,9 +663,7 @@ public class MessageFragment extends Fragment {
             e.printStackTrace();
         }
 
-        //Display info
-
-
+        //Display info (displays as a random different color each time to spice things up)
         t.setText(restaurantName);
         t.setTextColor(Color.rgb((int)(Math.random()*255), (int)(Math.random()*255), (int)(Math.random()*255)));
 
@@ -773,25 +678,6 @@ public class MessageFragment extends Fragment {
         sharedPreferences.edit().putString("RestaurantName", restaurantName).apply();
         sharedPreferences.edit().putString("RestaurantPhone", restaurantPhone).apply();
         sharedPreferences.edit().putString("RestaurantURL", restaurantURL).apply();
-    }
-
-    //Button to set self as available. Query server to update user availability
-    //Should send:
-    // 1. Phone number
-    // 2. Email
-    // 3. First name
-    // 4. Last name
-    // 5. Latitude
-    // 6. Longitude
-    // 7. 17 strings (preferences package), revise later
-    public void setAvailable(View v){
-        //Access app user's online status and set as active
-        MainActivity.me.setOnline(true);
-
-        //Activate fragment to update preferences
-//        DialogFragment updateDialog = new updatePrefsDialogFragment();
-//        updateDialog.show(getFragmentManager(),"updatePrefs");
-
     }
 
 

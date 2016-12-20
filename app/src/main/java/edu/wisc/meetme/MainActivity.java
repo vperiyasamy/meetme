@@ -133,6 +133,8 @@ public class MainActivity extends AppCompatActivity
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
+        //Adds function to set user as unavailable
+        // by selecting from the dropdown in the top right of the screen
         if (id == R.id.utility) {
             //Set inactive
             String[ ] aStr = new String[1] ;
@@ -142,7 +144,7 @@ public class MainActivity extends AppCompatActivity
 
             if (!aStr[0].isEmpty())
             {
-                //Execute register request
+                //Execute server request to set user as unavailable
                 httpInactive hI = new httpInactive();
                 hI.execute(aStr);
             }
@@ -157,6 +159,7 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
+    //AsyncTask that sends server query to set user as unavailable
     protected class httpInactive extends AsyncTask<String, Void, String> {
         @Override
         protected String doInBackground(String... strs) {
@@ -184,8 +187,6 @@ public class MainActivity extends AppCompatActivity
                 //Execute HTTP POST
                 HttpResponse response = httpclient.execute(setActive);
                 //Capture acknowledgement from server
-                // In this demo app, the server returns "Update" if the tag already exists;
-                // Otherwise, the server returns "New"
                 temp = EntityUtils.toString(response.getEntity());
             } catch (ClientProtocolException e) {
                 e.printStackTrace();
@@ -227,29 +228,6 @@ public class MainActivity extends AppCompatActivity
 
         }
     }
-
-    //Button to set self as available. Query server to update user availability
-    //Should send:
-    // 1. Phone number
-    // 2. Email
-    // 3. First name
-    // 4. Last name
-    // 5. Latitude
-    // 6. Longitude
-    // 7. 17 strings (preferences package), revise later
-    public void setAvailable(View v){
-        //Access app user's online status and set as active
-        me.setOnline(true);
-    }
-
-    // Preferences should be formatted as 1 long string and as follows:
-    // "503288ae91d4c4b30a586d67,0;503288ae91d4c4b30a586d67,1;503288ae91d4c4b30a586d67,-1;503288ae91d4c4b30a586d67,0;503288ae91d4c4b30a586d67,1"
-    //   a. Category ID, then a comma
-    //   b. like(1), dislike(-1) or no preference(0) (int), then semicolon
-    //       - no semicolon at end of big string
-
-
-    //Asynchronous task that sends server request to set user as available.
 
     @SuppressWarnings("StatementWithEmptyBody")
     @Override
