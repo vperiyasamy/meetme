@@ -76,6 +76,10 @@ public class RegisterActivity extends Activity {
                                                    // DISPLAY ERROR MESSAGE TO USER THAT FIELDS ARE INCOMPLETE
                                                    Toast.makeText(getApplicationContext(), "Please fill in all fields before registration", Toast.LENGTH_SHORT).show();
                                                    sharedPreferences.edit().putString("Phone", "").apply();
+                                                   sharedPreferences.edit().putString("RestaurantName", "").apply();
+                                                   sharedPreferences.edit().putString("RestaurantPhone", "").apply();
+                                                   sharedPreferences.edit().putString("RestaurantURL", "").apply();
+
                                                }
 
                                            }

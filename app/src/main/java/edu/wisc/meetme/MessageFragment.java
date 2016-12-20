@@ -39,6 +39,7 @@ import org.json.JSONException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Hashtable;
+import java.util.StringTokenizer;
 
 import static java.util.Arrays.asList;
 
@@ -60,6 +61,10 @@ public class MessageFragment extends Fragment {
 
     SharedPreferences sharedPreferences;
     JSONArray recommendReply;
+
+    TextView t;
+    TextView p;
+    TextView u;
 
 // user friendly string names of each category
 //    public String[] categories = {
@@ -369,6 +374,25 @@ public class MessageFragment extends Fragment {
 
         RelativeLayout myRelativeLayout = (RelativeLayout) inflater.inflate(R.layout.fragment_discover, container, false);
         sharedPreferences = getActivity().getSharedPreferences("edu.wisc.meetme", Context.MODE_PRIVATE);
+
+        t = (TextView) myRelativeLayout.findViewById(R.id.restaurantName);
+        p = (TextView) myRelativeLayout.findViewById(R.id.restaurantPhone);
+        u = (TextView) myRelativeLayout.findViewById(R.id.restaurantURL);
+
+        String restaurantName = sharedPreferences.getString("RestaurantName", "");
+        String restaurantPhone = sharedPreferences.getString("RestaurantPhone", "");
+        String restaurantURL = sharedPreferences.getString("RestaurantURL", "");
+
+        t.setText(restaurantName);
+        t.setTextColor(Color.rgb((int)(Math.random()*255), (int)(Math.random()*255), (int)(Math.random()*255)));
+
+        p.setText(restaurantPhone);
+        p.setTextColor(Color.rgb((int)(Math.random()*255), (int)(Math.random()*255), (int)(Math.random()*255)));
+
+        u.setText(restaurantURL);
+        u.setTextColor(Color.rgb((int)(Math.random()*255), (int)(Math.random()*255), (int)(Math.random()*255)));
+
+
         // initialize hash table
         categoryHash = new Hashtable<String, String>();
         for(int i = 0; i < categoryIds.length; i++) {
@@ -709,6 +733,7 @@ public class MessageFragment extends Fragment {
         //Filter through info
         String restaurantName = "";
         String restaurantPhone= "";
+        String restaurantURL = "";
         Location restaurantGPS = null;
         Double lat;
         Double lon;
@@ -716,8 +741,9 @@ public class MessageFragment extends Fragment {
         try {
             restaurantName = (String) recommendReply.get(0);
             restaurantPhone = (String) recommendReply.get(1);
-            lat = (Double)recommendReply.get(2);
-            lon = (Double)recommendReply.get(3);
+            restaurantURL = (String) recommendReply.get(2);
+            lat = (Double)recommendReply.get(3);
+            lon = (Double)recommendReply.get(4);
             restaurantGPS = new Location("");
             restaurantGPS.setLatitude(lat);
             restaurantGPS.setLongitude(lon);
@@ -731,14 +757,22 @@ public class MessageFragment extends Fragment {
         }
 
         //Display info
-        TextView t = (TextView)getActivity().findViewById(R.id.restaurantName);
+
+
         t.setText(restaurantName);
         t.setTextColor(Color.rgb((int)(Math.random()*255), (int)(Math.random()*255), (int)(Math.random()*255)));
 
-        TextView p = (TextView)getActivity().findViewById(R.id.restaurantPhone);
+
         p.setText(restaurantPhone);
         p.setTextColor(Color.rgb((int)(Math.random()*255), (int)(Math.random()*255), (int)(Math.random()*255)));
+
+        u.setText(restaurantURL);
+        u.setTextColor(Color.rgb((int)(Math.random()*255), (int)(Math.random()*255), (int)(Math.random()*255)));
         Toast.makeText(getActivity(), "You can find this restaurant in the map!", Toast.LENGTH_SHORT).show();
+
+        sharedPreferences.edit().putString("RestaurantName", restaurantName).apply();
+        sharedPreferences.edit().putString("RestaurantPhone", restaurantPhone).apply();
+        sharedPreferences.edit().putString("RestaurantURL", restaurantURL).apply();
     }
 
     //Button to set self as available. Query server to update user availability

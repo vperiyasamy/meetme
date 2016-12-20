@@ -139,6 +139,7 @@ public class GmapFragment extends Fragment implements OnMapReadyCallback {
             // Update the user's location once the user moves.
             @Override
             public void onLocationChanged(Location location) {
+                mMap.clear();
                 latestLat = Double.toString(location.getLatitude());
                 latestLon = Double.toString(location.getLongitude());
                 if (restaurantLat.equals("") || restaurantLon.equals("")) {
@@ -155,14 +156,14 @@ public class GmapFragment extends Fragment implements OnMapReadyCallback {
                     LatLng restaurantLocation = new LatLng(Double.parseDouble(restaurantLat), Double.parseDouble(restaurantLon));
                     markers.add(mMap.addMarker(new MarkerOptions().position(userLocation).title("Your Location").icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE))));
                     markers.add(mMap.addMarker(new MarkerOptions().position(restaurantLocation).title("Restaurant Location").icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED))));
-                    mMap.clear();
+
 
                     LatLngBounds.Builder builder = new LatLngBounds.Builder();
                     for (Marker marker : markers) {
                         builder.include(marker.getPosition());
                     }
                     LatLngBounds bounds = builder.build();
-                    int padding = 200;
+                    int padding = 250;
                     CameraUpdate cu = CameraUpdateFactory.newLatLngBounds(bounds, padding);
                     mMap.animateCamera(cu);
 
@@ -245,6 +246,7 @@ public class GmapFragment extends Fragment implements OnMapReadyCallback {
         if (Build.VERSION.SDK_INT < 23) {
             locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, locationListener);
         } else {
+            mMap.clear();
             if (ContextCompat.checkSelfPermission(getActivity(), android.Manifest.permission.ACCESS_FINE_LOCATION) !=
                     PackageManager.PERMISSION_GRANTED) {
                 // ask for permission
@@ -272,19 +274,18 @@ public class GmapFragment extends Fragment implements OnMapReadyCallback {
 
 
                     } else {
-
                         LatLng userLocation = new LatLng(Double.parseDouble(latestLat), Double.parseDouble(latestLon));
                         LatLng restaurantLocation = new LatLng(Double.parseDouble(restaurantLat), Double.parseDouble(restaurantLon));
                         markers.add(mMap.addMarker(new MarkerOptions().position(userLocation).title("Your Location").icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE))));
                         markers.add(mMap.addMarker(new MarkerOptions().position(restaurantLocation).title("Restaurant Location").icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED))));
-                        mMap.clear();
+
 
                         LatLngBounds.Builder builder = new LatLngBounds.Builder();
                         for (Marker marker : markers) {
                             builder.include(marker.getPosition());
                         }
                         LatLngBounds bounds = builder.build();
-                        int padding = 200;
+                        int padding = 250;
                         CameraUpdate cu = CameraUpdateFactory.newLatLngBounds(bounds, padding);
                         mMap.animateCamera(cu);
 
@@ -344,7 +345,7 @@ public class GmapFragment extends Fragment implements OnMapReadyCallback {
                     latestLon = Double.toString(lastKnownLocation.getLongitude());
                     if (restaurantLat.equals("") || restaurantLon.equals("")) {
                         LatLng userLocation = new LatLng(Double.parseDouble(latestLat), Double.parseDouble(latestLon));
-                        mMap.clear();
+
 
                         mMap.addMarker(new MarkerOptions().position(userLocation).title("Your Location").icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE)));
                         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(userLocation, 15));
@@ -356,7 +357,7 @@ public class GmapFragment extends Fragment implements OnMapReadyCallback {
                         sharedPreferences.edit().putString("Latitude", latestLat).apply();
                         sharedPreferences.edit().putString("Longitude", latestLon).apply();
                     } else {
-                        mMap.clear();
+
                         LatLng userLocation = new LatLng(Double.parseDouble(latestLat), Double.parseDouble(latestLon));
 
                         LatLng restaurantLocation = new LatLng(Double.parseDouble(restaurantLat), Double.parseDouble(restaurantLon));
@@ -369,7 +370,7 @@ public class GmapFragment extends Fragment implements OnMapReadyCallback {
                             builder.include(marker.getPosition());
                         }
                         LatLngBounds bounds = builder.build();
-                        int padding = 200;
+                        int padding = 250;
                         CameraUpdate cu = CameraUpdateFactory.newLatLngBounds(bounds, padding);
                         mMap.animateCamera(cu);
 

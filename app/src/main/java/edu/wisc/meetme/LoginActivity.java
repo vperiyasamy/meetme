@@ -44,7 +44,7 @@ public class LoginActivity extends Activity {
 
         sharedPreferences = getSharedPreferences("edu.wisc.meetme", Context.MODE_PRIVATE);
         // Get the data back from local memory
-        loadUserName = sharedPreferences.getString("Phone", ""); // "" menas default value
+        loadUserName = sharedPreferences.getString("Phone", "");
         Toast.makeText(getApplicationContext(), "Welcome to MeetMe!", Toast.LENGTH_LONG).show();
     }
 }

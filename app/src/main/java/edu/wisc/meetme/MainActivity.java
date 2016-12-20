@@ -148,6 +148,9 @@ public class MainActivity extends AppCompatActivity
             }
             sharedPreferences.edit().putString("RestaurantLat", "").apply();
             sharedPreferences.edit().putString("RestaurantLong", "").apply();
+            sharedPreferences.edit().putString("RestaurantName", "").apply();
+            sharedPreferences.edit().putString("RestaurantPhone", "").apply();
+            sharedPreferences.edit().putString("RestaurantURL", "").apply();
             return true;
         } else {
             return false;
